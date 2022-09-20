@@ -1,3 +1,6 @@
+# ©, 2022, Sirris
+# owner: HCAB
+
 from jupyter_dash import JupyterDash
 from dash.dependencies import Input, Output, State
 from dash import callback_context
@@ -11,7 +14,7 @@ import os
 import tempfile
 import zipfile
 
-from starter_kits import pipeline, DATA_PATH
+from starterkits import pipeline, DATA_PATH
 
 from sklearn import preprocessing
 from sklearn.metrics import confusion_matrix, recall_score, precision_score, f1_score
@@ -743,6 +746,7 @@ class LstmApp():
         @ts_app.callback(Output('show-table', 'children'), Input("acc_table", "children"))
         def show_table(data):
             if data is not None:
+                import pdb;pdb.set_trace()
                 cols = ['model id', '# layers', 'layer size 1', 'layer size 2',
                         'layer size 3', 'sequence length', 'dropout', '#epochs', 'accurracy', 'precision', 'recall']
                 data = pd.DataFrame.from_dict(json.JSONDecoder().decode(data))

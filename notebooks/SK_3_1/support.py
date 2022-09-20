@@ -1,3 +1,6 @@
+# ©, 2022, Sirris
+# owner: HCAB
+
 import pkg_resources
 import os
 
@@ -26,8 +29,10 @@ def try_package(x):
 
 def read_data(name):
     if not os.path.exists(os.path.join('data', name + '.csv')):
-        pipeline.download_from_repo(os.path.join('data', name + '.csv'), 'data/StarterKits/D3.1/' + name + '.csv').make()
-    data = pd.read_csv(os.path.join('data', name + '.csv'), header=0, names=['Date', 'Total', 'Direction 0', 'Direction 1'])
+        pipeline.download_from_repo(os.path.join('data', name + '.csv'),
+                                    'data/StarterKits/D3.1/' + name + '.csv').make()
+    data = pd.read_csv(os.path.join('data', name + '.csv'), header=0,
+                       names=['Date', 'Total', 'Direction 0', 'Direction 1'])
     data['Node'] = name
     data['Timestamp'] = pd.to_datetime(data['Date'], format='%m/%d/%Y %I:%M:%S %p')
     return data
@@ -35,7 +40,8 @@ def read_data(name):
 
 def read_fremont_data(name):
     if not os.path.exists(os.path.join('data', name + '.csv')):
-        pipeline.download_from_repo(os.path.join('data', name + '.csv'), 'data/StarterKits/D3.1/' + name + '.csv').make()
+        pipeline.download_from_repo(os.path.join('data', name + '.csv'),
+                                    'data/StarterKits/D3.1/' + name + '.csv').make()
     data = pd.read_csv(os.path.join('data', name + '.csv'), header=0, names=['Date', 'Direction 1', 'Direction 0'])
     data['Node'] = name
     data['Timestamp'] = pd.to_datetime(data['Date'], format='%m/%d/%Y %I:%M:%S %p')
@@ -69,23 +75,23 @@ def get_data(force=False):
     This dataset will be saved locally.
     returns: Seattle bike data
     """ 
-    def extract_csv_file(fname):
+    def extract_csv_file(file_name):
         target_folder = DATA_PATH / 'SK_3_1'
-        zip_fname = pipeline.download_from_repo(
+        zip_file_name = pipeline.download_from_repo(
             'SK_3_1',
             'Seattle_bike_data.csv.zip',
             str(target_folder / 'Seattle_bike_data.csv.zip'),
             force=force)
 
-        with zipfile.ZipFile(zip_fname, 'r') as zip:
-            zip.extract('Seattle_bike_data.csv', path=str(target_folder))
-        os.remove(zip_fname)
-        return fname
-    fname = (pipeline.File(extract_csv_file, 
-                           str(DATA_PATH / 'SK_3_1' / 'Seattle_bike_data.csv'))
-             .make(force=force))
+        with zipfile.ZipFile(zip_file_name, 'r') as zipped_file:
+            zipped_file.extract('Seattle_bike_data.csv', path=str(target_folder))
+        os.remove(zip_file_name)
+        return file_name
+    f_name = (pipeline.File(extract_csv_file,
+                            str(DATA_PATH / 'SK_3_1' / 'Seattle_bike_data.csv'))
+              .make(force=force))
 
-    df = pd.read_csv(fname, sep=',', index_col=0, parse_dates=['Timestamp', 'Date'])
+    df = pd.read_csv(f_name, sep=',', index_col=0, parse_dates=['Timestamp', 'Date'])
     df['Time'] = df['Timestamp'].dt.time
 
     return df

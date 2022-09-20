@@ -1,0 +1,13 @@
+cufflinks==0.17.3
+elucidata==0.0.8
+ipython==8.4.0
+ipywidgets==7.6.4
+matplotlib==3.5.1
+numpy==1.22.3
+pandas==1.3.2
+plotly==5.3.1
+scipy==1.8.0
+seaborn==0.11.2
+setuptools==61.2.0
+starterkits.egg==info
+statsmodels==0.13.2

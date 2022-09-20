@@ -1,3 +1,6 @@
+# ©, 2022, Sirris
+# owner: HCAB
+
 import os
 import pandas as pd
 import numpy as np
@@ -5,8 +8,8 @@ import numpy as np
 from statsmodels.tsa.seasonal import STL
 
 from starterkits import pipeline, DATA_PATH
-from elucidata.tools.preprocessing.outliers import boxplot_outliers
-from elucidata.tools.utils.df_utils import label_connected_elements_intervals
+from starterkits.preprocessing.outliers import boxplot_outliers
+from starterkits.utils.df_utils import label_connected_elements_intervals
 
 import zipfile
 import ipywidgets as widgets

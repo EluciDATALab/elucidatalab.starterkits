@@ -4,7 +4,7 @@
 """table visualizations using plotly"""
 import dash_table
 from jupyter_dash import JupyterDash
-import dash_html_components as html
+from dash import html
 
 
 def plot_table(df,

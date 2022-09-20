@@ -1,3 +1,6 @@
+# ©, 2022, Sirris
+# owner: HCAB
+
 import re
 import pandas as pd
 import numpy as np
@@ -11,7 +14,7 @@ import ipywidgets as widgets
 from ipywidgets import interact
 from IPython.utils import io
 
-from starter_kits.visualization import vis_plotly_widgets as vpw
+from starterkits.visualization import vis_plotly_widgets as vpw
 from support import LstmApp, get_test_scores
 
 import cufflinks as cf

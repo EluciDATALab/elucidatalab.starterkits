@@ -1,3 +1,6 @@
+# ©, 2022, Sirris
+# owner: HCAB
+
 import numpy as np
 import pandas as pd
 

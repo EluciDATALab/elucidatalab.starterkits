@@ -1,3 +1,6 @@
+# ©, 2022, Sirris
+# owner: HCAB
+
 import pandas as pd
 import numpy as np
 from jupyter_dash import JupyterDash
@@ -687,7 +690,8 @@ def get_method_parameters(params):
 
 def get_predictions(regr, strategy, new_feats, normalize):
 
-    num_cores = multiprocessing.cpu_count()
+    # multiprocessing does not work sometimes on some machines
+    num_cores = 1  # multiprocessing.cpu_count()
 
     if strategy == '1 month':
         offset_test = 1
@@ -796,10 +800,7 @@ def get_predictions(regr, strategy, new_feats, normalize):
         pred = pd.Series(pred, index=timestamps)
         true_values = pd.Series(true_values, index=timestamps)
 
-
     return pred, true_values
-
-
 
 
 def run_app(new_feats, mode='external', port=8093, debug=True, height=1000, host='0.0.0.0'):

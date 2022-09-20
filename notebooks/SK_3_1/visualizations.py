@@ -1,4 +1,5 @@
-import math
+# ©, 2022, Sirris
+# owner: HCAB
 
 import calmap
 import folium
@@ -8,7 +9,7 @@ import matplotlib.pyplot as plt
 import pandas as pd
 import plotly.express as px
 import seaborn as sb
-from starterkits.visualization import vis_plotly as vp
+from starterkits.visualization.circular_heatmap import plot_circular_heatmap
 from starterkits.visualization import vis_plotly as vp
 from starterkits.visualization import vis_plotly_widgets_tools as vpwt
 from ipywidgets import interact
@@ -107,9 +108,9 @@ def plot_calendar_heatmap(data):
     def heatmap_with_cmap_selector(df, cmaps=None):
         cdict = {'green': ((0.0, 0.0, 0.0),   # no red at 0
                            (0.5, 1.0, 1.0),   # all channels set to 1.0 at 0.5 to create white
-                           (1.0, 0.8, 0.8)),  # set to 0.8 so its not too bright at 1
+                           (1.0, 0.8, 0.8)),  # set to 0.8 so it's not too bright at 1
 
-                 'red': ((0.0, 0.8, 0.8),   # set to 0.8 so its not too bright at 0
+                 'red': ((0.0, 0.8, 0.8),   # set to 0.8 so it's not too bright at 0
                          (0.5, 1.0, 1.0),   # all channels set to 1.0 at 0.5 to create white
                          (1.0, 0.0, 0.0)),  # no green at 1
 
@@ -168,115 +169,12 @@ def small_multiples_crossings(data):
     g.map_dataframe(draw_heatmap, draw_colorbar=False)
 
 
-def circular_heatmap(table, cmap="Blues", vmin=None, vmax=None, vcenter=None, inner_r=0.25, line_width=0.5,
-                     legend_name='', title='', hide_labels=False, radial_label_interval=1, radius_label_interval=1,
-                     label_size=None, pie_args=None, ax=None, colorbar=True):
-    """
-    source: https://medium.com/analytics-vidhya/exploratory-data-analysis-of-google-fit-data-with-pandas-and-seaborn-
-            a4369366c543
-
-    :param table:       DataFrame   Each row represents a circle, with the first row being the outer circle
-    :param cmap:        Object      Matplotlib colormap. E.g. plt.cm.hot or mpl.cm.Blues
-    :param vmin:        Integer     Can be used to use a consistent scale by use of multiple heatmaps.
-    :param vmax:        Integer     Can be used to use a consistent scale by use of multiple heatmaps.
-    :param vcenter:     Integer     Can be used to center the colormap around a value. (e.g. around zero)
-    :param line_width:  Float       Width of the grid lines.
-    :param legend_name: String      Name of the legend.
-    :param title:       String      Title of the image
-    :param hide_labels: Bool        Whether or not to show axis labels.
-    :param radial_label_interval:   Int      Interval to skip labels (useful if very many radial bins)
-    :param radius_label_interval:   Int      Interval to skip labels (useful if many circles)
-    :param label_size:              Float       Font size of radial and radius labels
-    :param param inner_r:           Float       Size of the inner circle
-    :param param pie_args:
-    :param ax:
-    :param colorbar:     Bool        Whether or not to show the colorbar/legend.
-    :return:
-
-    ------------------------------------------------------------------------------------------
-
-    example:
-    --------
-    import numpy as np
-    import pandas as pd
-    import matplotlib as mpl
-
-    numpy_data = np.array([[0.8,0.6,0.5,0.4,0.7,0.2,0.3],
-                           [1.1,1.2,2.1,2.2,1.3,1.1,1.2],
-                           [2.4,2.2,2.5,2.3,2.1,2.2,2.2],
-                           [2.8,2.2,2.3,2.7,2.2,2.3,2.4],
-                           [2,2.6,2.5,2.4,2.7,2.6,2.5]])
-    df = pd.DataFrame(data=numpy_data, index=["night", "evening", "afternoon", "noon", "morning"],
-                      columns=["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"])
-
-    circular_heatmap.circular_heatmap(df, inner_r=0.1, legend_name='Dummy data', vmin=0, vcenter=1,
-                                      title='Example circular heatmap', cmap=mpl.cm.seismic)
-
-    """
-    if pie_args is None:
-        pie_args = {}
-
-    n, m = table.shape
-    vmin = table.min().min() if vmin is None else vmin
-    vmax = table.max().max()*1.1 if vmax is None else vmax
-
-    if ax is None:
-        plt.figure(figsize=(8, 8))
-        ax = plt.axes()
-
-    centre_circle = plt.Circle((0, 0), inner_r, edgecolor='grey', facecolor='white', fill=True, linewidth=0.25)
-    ax.add_artist(centre_circle)
-    if vcenter is None:
-        norm = colors.Normalize(vmin=vmin, vmax=vmax)
-    else:
-        norm = colors.TwoSlopeNorm(vcenter=vcenter, vmin=vmin, vmax=vmax)
-
-    cmapper = plt.cm.ScalarMappable(norm=norm, cmap=cmap)
-
-    for i, (row_name, row) in enumerate(table.iterrows()):
-        # Mark nan points in grey
-        colors_mappes = [cmapper.to_rgba(x) if not math.isnan(x) else (0.8, 0.8, 0.8) for x in row.values]
-        labels = None if i > 0 or hide_labels else [label if i % radial_label_interval == 0 else ""
-                                                    for i, label in enumerate(table.columns)]
-        wedges = ax.pie([1] * m, radius=inner_r + float(n - i) / n, colors=colors_mappes,
-                        labels=labels, startangle=90, counterclock=False, wedgeprops={'linewidth': -1},
-                        textprops={'fontsize': label_size}, **pie_args)
-        plt.setp(wedges[0], edgecolor='white', linewidth=line_width)
-
-        if not hide_labels:
-            wedges = _fix_labels(wedges, i, radius_label_interval, ax, inner_r,
-                                 n, row_name, label_size)
-
-        plt.setp(wedges[0], edgecolor='white', linewidth=line_width)
-
-    if colorbar:
-        plt.colorbar(cmapper, label=legend_name, shrink=0.7, ax=ax)
-    ax.title.set_text(title)
-
-    return ax
-
-
-def _fix_labels(wedges, i, radius_label_interval, ax, inner_r, n, row_name, label_size):
-    # Center the radial labels:
-    for label in wedges[1]:
-        label.set_horizontalalignment('center')
-
-    # Add the circular labels:
-    if i % radius_label_interval == 0:
-        label_distance = 1.05
-        wedges = ax.pie([1], radius=inner_r + float(n - i - 1) / n, colors=['w'], labels=[row_name],
-                        startangle=-90, wedgeprops={'linewidth': 0}, labeldistance=label_distance,
-                        textprops=dict(fontsize=label_size))
-
-    return wedges
-
-
 def draw_circular_heatmap_crossings(data, node='Fremont_Bridge'):
     node_data = data[data.Node == node]
     node_df = node_data[['Total', 'DayOfWeek', 'Hour']].groupby(['DayOfWeek', 'Hour']).sum().reset_index()
     node_df_pivoted = node_df.pivot(index='DayOfWeek', columns='Hour', values='Total')
     node_df_pivoted.index = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
-    circular_heatmap(node_df_pivoted, inner_r=0.1, legend_name='Total crossings', title="Hour", cmap='YlGn')
+    plot_circular_heatmap(node_df_pivoted, inner_r=0.1, legend_name='Total crossings', title="Hour", cmap='YlGn')
 
 
 # noinspection PyUnusedLocal
