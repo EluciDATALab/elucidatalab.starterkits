@@ -466,3 +466,156 @@ def plot_stations(df, n_stations=10):
                   marker=folium.Circle, lat='to_station_lat', lon='to_station_lon', popup_name='to_station_name')
 
     return m
+
+def plot_boxplot(df, x, y, y_scale='linear'):
+    """
+    Draw blox plot
+
+    :param df: data to plot
+    :param x: column of `df` to use as x-axis
+    :param y: column of `df` to use as y-axis
+    :param y_scale: 'linear' or 'log'
+
+    :return: The Axes object with the plot drawn onto it
+    """
+    field_unique = df[x].unique()
+
+    fig, ax = plt.subplots(figsize=(8, 8))
+    cols = sns.color_palette('Dark2')
+    cols = {e: cols[k] for k, e in enumerate(field_unique)}
+    sns.boxplot(x=x, y=y, data=df, whis=np.inf, hue=x,
+                palette=cols, notch=True, boxprops=dict(alpha=.3), ax=ax,
+                dodge=False)
+    sns.stripplot(x=x, y=y, data=df, hue=x,
+                  palette=cols, jitter=True, size=10, alpha=0.7, ax=ax)
+    ax.get_legend().remove()
+    ax.set_title(f'Relationship Between the {x} and the {y} variables')
+    for a in cols:
+        ax.axhline(df[df[x] == a][y].median(), color=cols[a], linestyle='--')
+    ax.set_yscale(y_scale)
+
+    return ax
+
+def plot_barplot_with_labels(df, x, y, labels, title, ymax=1,ax=None):
+    """
+    Draw bar plot with labels centered on top of the bars
+
+    
+    :param df: data to plot
+    :param x: column of `df` to use as x-axis
+    :param y: column of `df` to use as y-axis
+    :param labels: column of `df` to use as bar labels
+    :param title: title of bar plot
+    :param ymax: y-axis max
+    :param ax: the Axes object with the plot drawn onto it
+
+    :return: the Axes object with the plot drawn onto it
+    """
+    rcParams['figure.figsize'] = (12, 6)
+
+    if ax==None:
+        g = sns.barplot(x=x, y=y, data=df)
+    else:
+        g = sns.barplot(x=x, y=y, data=df, ax=ax)
+
+    g.set_title(title)
+    g.set_ylim([0, ymax])
+    g.grid("on", axis="y")
+    for patch, label in zip(g.patches, df[labels]):
+        x = patch.get_x() + patch.get_width()/2  # center label on bar
+        y = 0 #patch.get_height()
+        g.annotate(label, (x, y), ha='center', va='bottom', color='black')
+    g.set_xticklabels(g.get_xticklabels(), ha="right", rotation =30)
+
+    return g
+
+def plot_double_barplot(df,ax,title,x ='to_station_name',y='ratio_f2m',secondary_y='ratio_m2f',ymax=9):
+    """
+    Draw bar plot with a secundary axis
+
+    :param df: data to plot
+    :param ax: the Axes object with the plot drawn onto it
+    :param title: title of bar plot
+    :param x: column of `df` to use as x-axis
+    :param y: column of `df` to use as y-axis
+    :param secondary_y: column of `df` to use as secundary y-axis
+    :param ymax: y-axis max.
+
+    :return: The Axes object with the plot drawn onto it
+    """
+    df.plot(ax=ax, kind= 'bar' , x=x, y=[y,secondary_y]  ,rot=30)
+    ax.set_ylabel('ratio')
+    ax.set_xticklabels(ax.get_xticklabels(),ha="right")
+    ax.yaxis.set_ticks_position('left')
+    ax.axhline(2,c='k',ls='--')
+
+    ax.set_ylim(bottom=0, top=ymax)
+    ax.set_title(title)
+
+    return ax
+
+
+class Map:
+    """
+    Wraps a folium map.
+
+    Allows to add markers stored in a DataFrame, see `add_markers`.
+    Supports display in Jupyter notebook.
+    """
+    def __init__(self):
+        self.map = folium.Map(
+            location=[47.642394, -122.323738],
+            tiles='openstreetmap',
+            control_scale=True,
+            zoom_start=12,
+            min_zoom=12,
+            max_zoom=18,
+        )
+
+    def _repr_html_(self):
+        """Display the HTML map in a Jupyter notebook."""
+        return self.map._repr_html_()
+
+    def add_markers(self, df, lat='lat', lon='lon', radius=None, scale=0.08,
+                    marker=folium.CircleMarker, popup_name='name', color='blue'):
+        """
+        Add markers to map
+
+        :pram df: marker positions
+        :param lat: field in `df` with latitude values
+        :pram lon: field in `df` with longitute values
+        :param radius: field in `df` with radii
+        if None, use 100
+        :pram marker:
+        e.g., folium.Circle  # radius in map units
+        e.g., folium.CircleMarker  # radius in screen units
+        :param popup_name: field in `df` with marker popup names
+        :param color: color of markers (one color for all markers)
+
+        :return: self
+        """
+        if radius is None:
+            radii = 100 * np.ones(len(df))  # default
+        elif radius == 'elevation':
+            radii = 2 * df[radius].values
+        else:
+            radii = scale * df[radius].values
+
+        radius_column_name_to_label = {
+            "count": "Count",
+            "AbsTripDifference": "Unbalance",
+            "elevation": "Elevation (m)"
+        }
+        radius_label = radius_column_name_to_label[radius] if radius in radius_column_name_to_label else ""
+
+        for i in range(0, len(df)):  # todo: iterrows?
+            marker(
+                location=[df.iloc[i][lat], df.iloc[i][lon]],
+                radius=radii[i],
+                popup=df.iloc[i][popup_name] + (f" - {radius_label}: {np.around(df.iloc[i][radius],1)}" if radius is not None else ""),
+                color=color,
+                fill_color=color,  # use same color for the fill
+            ).add_to(self.map)
+
+        return self  # so we can chain member calls
+

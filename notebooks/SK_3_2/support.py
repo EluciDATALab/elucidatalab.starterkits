@@ -35,15 +35,15 @@ def assert_correct_package_versions():
 
 
 def plot_boxplot(df, x, y, y_scale='linear'):
-    """Draw blox plot.
+    """
+    Draw blox plot
 
-    Args:
-        df (DataFrame): data to plot
-        x (str): column of `df` to use as x-axis
-        y (str): column of `df` to use as y-axis
-        y_scale (str): 'linear' or 'log'
+    :param df: data to plot
+    :param x: column of `df` to use as x-axis
+    :param y: column of `df` to use as y-axis
+    :param y_scale: 'linear' or 'log'
 
-    Return: (matplotlib Axes): the Axes object with the plot drawn onto it
+    :return: (matplotlib Axes): the Axes object with the plot drawn onto it
     """
     field_unique = df[x].unique()
 
