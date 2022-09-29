@@ -132,7 +132,7 @@ def get_data(force=False):
                                 fname = str(DATA_PATH / 'SK_3_2' / 'SK-3-2-Pronto.zip'),
                                 force=force)
 
-    extract_csv_file(zip_fname=zip_fname, force=force)
+    extract_csv_file(zip_fname=zip_fname)
 
 
 def get_weekdays():
@@ -247,6 +247,22 @@ def get_trip_duration_gender(df_trips):
     
     return trip_duration_gender
 
+def get_data_stats(df):
+    """
+    Get basic stats of the trips dataset
+
+    :param df: A pandas dataframe with trips data
+    """
+
+    df = df.copy()
+
+    nof_trips = df.index.size
+    start_date = df.starttime.min().date()
+    end_date = df.stoptime.max().date()
+    print(f"Dataset contains {nof_trips} trips from {start_date} to {end_date}.")
+    print(f"Number of bikes registered in the Pronto system: {df.bikeid.nunique()}")
+    print(f"Number of stations: {df.from_station_id.nunique()}")
+
 def get_trips_from_statios(df_trips):
     """
 
@@ -312,7 +328,7 @@ def get_gender_count(df_trips):
 
 def get_stations_ordered_by_count(df_trips):
     """
-    
+
     """
     stations_ordered_by_count = (df_trips
     .groupby('to_station_name')

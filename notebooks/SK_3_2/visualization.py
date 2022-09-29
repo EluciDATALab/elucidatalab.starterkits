@@ -12,6 +12,11 @@ from elucidata_demonstrator_3_2 import (
 
 
 def plot_difference_between_morning_evening_arrival(df):
+    """
+    Plot the difference between morning and evening rush for the stations of arrival on the map
+
+    :param df: A pandas dataframe with station data
+    """
     m = Map()
     m.add_markers(get_trips_top_arrival_morning_rush(df), popup_name='to_station_name',
                   marker=folium.Circle, lat='to_station_lat', lon='to_station_lon', radius='count', color='green')
@@ -36,14 +41,11 @@ def plot_trip_duration(df):
     """
     Plots the distribution of the trip duration
 
-    Args:
-        df: A dataframe
+    :param df: A pandas dataframe with trip data
 
-    Returns:
-        An axis
-
+    :returns: an axis of the subplot
     """
-    fig, ax = plt.subplots(figsize=(16, 6))
+    _, ax = plt.subplots(figsize=(16, 6))
     g = sns.distplot(df.tripdurationMinutes, kde=False, bins=200, ax=ax)
     g.set_xlabel('Trip duration (minutes)', fontsize=16)
     g.set_ylabel('Number of trips', fontsize=16)
@@ -59,8 +61,8 @@ def plot_trip_duration(df):
 def plot_user_age(df):
     """
     Plot the distribution of the user ages
-    Args:
-        df: A dataframe
+
+    :param df: A pandas dataframe with trip data
     """
     plt.figure(figsize=(15, 5))
     g = sns.distplot(df.age.dropna(), kde=False, bins=np.arange(df.age.max()))
@@ -79,8 +81,7 @@ def plot_user_birth_year(df):
     """
     Plot the distribution of the users birth year
 
-    Args:
-        df: A dataframe
+    :param df: A pandas dataframe with trip data
     """
     plt.figure(figsize=(15, 5))
     g = sns.distplot(df.birthyear.dropna(), kde=False);
@@ -94,8 +95,7 @@ def plot_trip_count_per_gender(df):
     """
     Plot the number of trips per gender
 
-    Args:
-        df: A dataframe
+    :param df: A pandas dataframe with trip data
     """
     gender_count = get_gender_count(df)
     plot_barplot_with_labels(gender_count, x='gender', y='count', labels='count', ymax=80000,
@@ -106,9 +106,8 @@ def plot_station_ranks_by_popularity(df, n_stations=10):
     """
     Plot stations rank based on their popularity
 
-    Args:
-        df: A dataframe
-        n_stations: Number of stations to plot
+    :param df: A pandas dataframe with station data
+    :param n_stations: Number of stations to plot
     """
     stations_ordered_by_count = get_stations_ordered_by_count(df)
     fig, axes = plt.subplots(1, 2, figsize=(18, 6))
@@ -125,6 +124,11 @@ def plot_station_ranks_by_popularity(df, n_stations=10):
 
 
 def plot_trips_per_hour(df):
+    """
+    Plot number of trips per hour distinguishing between weekdays and weekends
+
+    :param df: A pandas dataframe with trip data
+    """
     week_days = get_weekdays()
     fig, axes = plt.subplots(1, 2, subplot_kw=dict(polar=True), figsize=(18, 9))
     fig.suptitle('Number of Trips Per Hour for Weekdays (left) and Weekends (right)')
@@ -149,12 +153,18 @@ def plot_trips_per_hour(df):
         ax.set_title(w.title());
 
 
-def plot_station_of_arrivals_in_rush_hours(df):
+def plot_station_of_arrivals_in_rush_hours(df, n_stations=10):
+    """
+    Plot the distribution of the stations of arrival in morning and evening rush
+
+    :param df: A pandas dataframe with station data
+    :param n_stations: Number of stations to plot
+    """
     df_trips_topArrival_morning_rush = get_trips_top_arrival_morning_rush(df)
     df_trips_topArrival_evening_rush = get_trips_top_arrival_evening_rush(df)
     fig, ax = plt.subplots(nrows=1, ncols=2, sharey='col', figsize=(15, 5))
-    df1 = df_trips_topArrival_morning_rush[['to_station_name', 'count']].head(10)
-    df2 = df_trips_topArrival_evening_rush[['to_station_name', 'count']].head(10)
+    df1 = df_trips_topArrival_morning_rush[['to_station_name', 'count']].head(n_stations)
+    df2 = df_trips_topArrival_evening_rush[['to_station_name', 'count']].head(n_stations)
     ax0 = plot_barplot_with_labels(df1, x='to_station_name', y='count', labels='count',
                                    title='Top ten of stations of arrival in the morning rush hours',
                                    ymax=2000, ax=ax[0])
@@ -166,6 +176,11 @@ def plot_station_of_arrivals_in_rush_hours(df):
 
 
 def plot_trip_duration_age_joint_distribution(df):
+    """
+    Plot the join distribution of the trip duration in minutes vs age
+
+    :param df: A pandas dataframe with trip data
+    """
     df_trips_complete = df.dropna()
     pearson_corr = np.corrcoef(df_trips_complete.age, df_trips_complete.tripdurationMinutes)[0, 1]
 
@@ -176,6 +191,11 @@ def plot_trip_duration_age_joint_distribution(df):
 
 
 def plot_gender_influence_on_trip_duration(df):
+    """
+    Plot the influence of the age on the trip duration 
+
+    :param df: A pandas dataframe with trip data
+    """
     trip_duration_gender = get_trip_duration_gender(df)
     fig, axes = plt.subplots(1, 2, figsize=(15, 5), sharey=True)
     sns.heatmap(pd.DataFrame(trip_duration_gender["Number of Trips"]), ax=axes[0])
@@ -183,6 +203,11 @@ def plot_gender_influence_on_trip_duration(df):
 
 
 def plot_age_distribution_per_gender(df):
+    """
+    Plot the distribution of age per gender
+
+    :param df: A pandas dataframe with trip data
+    """
     df_tripAge = df[~df.age.isnull()]
     bins = list(range(0, 81))
     g = sns.FacetGrid(data=df_tripAge, hue="gender", height=5, aspect=4, legend_out=False,
@@ -193,12 +218,22 @@ def plot_age_distribution_per_gender(df):
 
 
 def plot_trips_over_days(df):
+    """
+    Plot the distribution of the trips per days of the week
+
+    :param df: A pandas dataframe with trip data
+    """
     g = sns.factorplot(x='day', data=df, size=5, aspect=2, kind='count', hue='usertype')
     g.set(ylabel='number of trips')
     g.fig.suptitle('Number of Trips per Day and per User Type');
 
 
 def plot_gender_over_days(df):
+    """
+    Plot the distribution of the gender per days of the week
+
+    :param df: A pandas dataframe with trip data
+    """
     df_trips_gender = df.groupby(['day', 'gender']).size().reset_index(name='ct')
     df_trips_gender['ratio'] = df_trips_gender.groupby('day')['ct'].transform(lambda x: x / x.sum() * 100)
 
@@ -215,6 +250,11 @@ def plot_gender_over_days(df):
 
 
 def plot_stations_popularity_per_gender(df):
+    """
+    Plot the distribution of the stations per gender
+
+    :param df: A pandas dataframe with station data
+    """
     df_arrivalStationFrequency_wm = extract_destination_station_frequency_per_gender(df)
     df_arrivalStationFrequency_wm_top10 = (df_arrivalStationFrequency_wm[['ratio_f2m', 'ratio_m2f']]
         .sort_values([('ratio_f2m')], ascending=False)
@@ -225,6 +265,11 @@ def plot_stations_popularity_per_gender(df):
 
 
 def plot_trips_per_station(df):
+    """
+    Plot the distribution of the trips per station
+
+    :param df: A pandas dataframe with trip data and station data
+    """
     df_trips_stations = get_trips_per_stations(df)
 
     fig, ax = plt.subplots()
@@ -243,10 +288,11 @@ def plot_trip_duration_over_time(df, time='both', axes=None):
     """
     Plot trip duration over time
 
-    Args:
-        df: A dataframe
-        time: The possible values are day, month, or both
-        axes: An axis
+    
+    :param df: A pandas dataframe with trip data
+    :param time: The period of time to be used for visualizing the trip duration.
+                The possible values are day, month, or both, Default: both
+    :param axes: An axis of the subplot to use for visualization. Default: None
     """
     df_trips_dow = get_trips_dow(df)
     df_trips_moy = get_trips_moy(df)
@@ -304,6 +350,11 @@ def plot_trip_duration_over_time(df, time='both', axes=None):
 
 
 def plot_trip_duration_difference_between_stations(df):
+    """
+    Plot a matrix depicting the difference of trip durations between each couple of (unbalanced) stations
+
+    :param df: A pandas dataframe with trip and station data
+    """
     df_trip_duration = get_unbalanced_trip_duration(df)
     trip_duration = pd.pivot_table(df_trip_duration,
                                    index='from_station',
@@ -336,26 +387,33 @@ def plot_trip_duration_difference_between_stations(df):
         g.get_yticklabels()[i].set_weight("bold")
 
 
-def plot_arrival_station_frequency_wm_weekend(df, gender='both'):
-    df_arrivalStationFrequency_wm_weekend_top10women = get_arrival_station_frequency_wm_weekend_women(df, n_stations=10)
-    df_arrivalStationFrequency_wm_weekend_top10men = get_arrival_station_frequency_wm_weekend_men(df, n_stations=10)
+def plot_arrival_station_frequency_weekend(df, gender='both', n_stations=10):
+    """
+    Plot stations of arrival during the weekend for men and/or women
+
+    :param df: A pandas dataframe with station data
+    :param gender: Gender type. Available values are men, women, and both. Default: both
+    :param n_stations: Number of stations to use for visualization. Default: 10
+    """
+    df_arrivalStationFrequency_wm_weekend_top10women = get_arrival_station_frequency_wm_weekend_women(df, n_stations=n_stations)
+    df_arrivalStationFrequency_wm_weekend_top10men = get_arrival_station_frequency_wm_weekend_men(df, n_stations=n_stations)
 
     if gender.lower() == 'women':
-        fig, ax = plt.subplots(figsize=(8, 5))
+        _, ax = plt.subplots(figsize=(8, 5))
 
         df = df_arrivalStationFrequency_wm_weekend_top10women[['to_station_name', 'ratio_f2m', 'ratio_m2f']]
         plot_double_barplot(df, ax, 'Top ten arrival stations during weekend for women')
         plt.show()
 
     elif gender.lower() == 'men':
-        fig, ax = plt.subplots(figsize=(8, 5))
+        _, ax = plt.subplots(figsize=(8, 5))
 
         df = df_arrivalStationFrequency_wm_weekend_top10men[['to_station_name', 'ratio_f2m', 'ratio_m2f']]
         plot_double_barplot(df, ax, 'Top ten arrival stations during weekend for men')
         plt.show()
 
     elif gender.lower() == 'both':
-        fig, ax = plt.subplots(nrows=1, ncols=2, sharey='col', figsize=(15, 5))
+        _, ax = plt.subplots(nrows=1, ncols=2, sharey='col', figsize=(15, 5))
 
         df1 = df_arrivalStationFrequency_wm_weekend_top10women[['to_station_name', 'ratio_f2m', 'ratio_m2f']]
         df2 = df_arrivalStationFrequency_wm_weekend_top10men[['to_station_name', 'ratio_f2m', 'ratio_m2f']]
@@ -365,6 +423,11 @@ def plot_arrival_station_frequency_wm_weekend(df, gender='both'):
 
 
 def plot_stations_of_arrival_on_weekdays_during_morning_rush_hour(df):
+    """
+    Plot stations of arrival on the weekdays during morning rush hour
+
+    :param df: A pandas dataframe with station data
+    """
     fig, ax = plt.subplots(figsize=(15, 5))
 
     df_arrivalStationFrequency_wm_morningRushHour = get_arrival_station_frequency_wm_morning_rush_hour(df)
@@ -376,6 +439,17 @@ def plot_stations_of_arrival_on_weekdays_during_morning_rush_hour(df):
 
 
 def plot_stations(df, n_stations=10):
+    """
+    Plot stations on the map as follows:
+        - Blue circles for the top n stations which are reached in the morning rush hours during weekdays
+        - Green circles for the top n stations which are reached by women during weekends
+        - Red circles for the top n stations which are reached by men during weekends
+
+    :param df: A pandas dataframe with station data
+    :param n_stations: Number of stations to use for visualization. Default: 10
+
+    :returns: Map object
+    """
     m = Map()
 
     df_arrivalStationFrequency_wm_morningRushHour = get_arrival_station_frequency_wm_morning_rush_hour(df)
