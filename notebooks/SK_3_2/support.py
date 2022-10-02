@@ -1,202 +1,21 @@
 import datetime as dt
 import pandas as pd
 import numpy as np
-from elucidata_demonstrator_3_2 import extract_destination_station_frequency_per_gender
-import pkg_resources
-import seaborn as sns
-from matplotlib import rcParams
 from starterkits import pipeline, DATA_PATH
 import zipfile
-import folium
-
-REQUIRED_PACKAGE_VERIONS = [
-    "datetime==4.3",
-    "matplotlib==2.2.3",
-    "pandas==0.23.4",
-    "numpy==1.15.4",
-    "seaborn==0.9.0",
-]
-
-def try_package(x):
-    pkg, pkg_version = x.split('==')
-    try:
-        version = pkg_resources.get_distribution(pkg).version
-        if pkg_version != version:
-            print(f'Warning: This notebook was tested with '
-                  f'version {pkg_version} of {pkg!r},'
-                  f'but you have version {version} installed.')
-    except Exception as e:
-        print(e)
-
-
-def assert_correct_package_versions():
-    for p in REQUIRED_PACKAGE_VERIONS:
-        try_package(p)
-
-
-def plot_boxplot(df, x, y, y_scale='linear'):
-    """
-    Draw blox plot
-
-    :param df: data to plot
-    :param x: column of `df` to use as x-axis
-    :param y: column of `df` to use as y-axis
-    :param y_scale: 'linear' or 'log'
-
-    :return: (matplotlib Axes): the Axes object with the plot drawn onto it
-    """
-    field_unique = df[x].unique()
-
-    fig, ax = plt.subplots(figsize=(8, 8))
-    cols = sns.color_palette('Dark2')
-    cols = {e: cols[k] for k, e in enumerate(field_unique)}
-    sns.boxplot(x=x, y=y, data=df, whis=np.inf, hue=x,
-                palette=cols, notch=True, boxprops=dict(alpha=.3), ax=ax,
-                dodge=False)
-    sns.stripplot(x=x, y=y, data=df, hue=x,
-                  palette=cols, jitter=True, size=10, alpha=0.7, ax=ax)
-    ax.get_legend().remove()
-    ax.set_title(f'Relationship Between the {x} and the {y} variables')
-    for a in cols:
-        ax.axhline(df[df[x] == a][y].median(), color=cols[a], linestyle='--')
-    ax.set_yscale(y_scale)
-
-    return ax
-
-
-def plot_barplot_with_labels(df, x, y, labels, title, ymax=1,ax=None):
-    """Draw bar plot with labels centered on top of the bars.
-
-    Args:
-        df (DataFrame): data to plot
-        x (str): column of `df` to use as x-axis
-        y (str): column of `df` to use as y-axis
-        labels (str): column of `df` to use as bar labels
-        title (str): title of bar plot
-        ymax (int or float): y-axis max
-        ax (matplotlib Axes): the Axes object with the plot drawn onto it
-
-    Return: (matplotlib Axes): the Axes object with the plot drawn onto it
-    """
-    rcParams['figure.figsize'] = (12, 6)
-
-    if ax==None:
-        g = sns.barplot(x=x, y=y, data=df)
-    else:
-        g = sns.barplot(x=x, y=y, data=df, ax=ax)
-
-    g.set_title(title)
-    g.set_ylim([0, ymax])
-    g.grid("on", axis="y")
-    for patch, label in zip(g.patches, df[labels]):
-        x = patch.get_x() + patch.get_width()/2  # center label on bar
-        y = 0 #patch.get_height()
-        g.annotate(label, (x, y), ha='center', va='bottom', color='black')
-    g.set_xticklabels(g.get_xticklabels(), ha="right", rotation =30)
-
-    return g
-
-def plot_double_barplot(df,ax,title,x ='to_station_name',y='ratio_f2m',secondary_y='ratio_m2f',ymax=9):
-    """Draw bar plot with a secundary axis.
-
-    Args:
-        df (DataFrame): data to plot
-        ax (matplotlib Axes): the Axes object with the plot drawn onto it
-        title (str): title of bar plot
-        x (str): column of `df` to use as x-axis
-        y (str): column of `df` to use as y-axis
-        secondary_y (str): column of `df` to use as secundary y-axis
-        ymax (int): y-axis max.
-
-    Return: (matplotlib Axes): the Axes object with the plot drawn onto it
-    """
-    df.plot(ax=ax, kind= 'bar' , x=x, y=[y,secondary_y]  ,rot=30)
-    ax.set_ylabel('ratio')
-    ax.set_xticklabels(ax.get_xticklabels(),ha="right")
-    ax.yaxis.set_ticks_position('left')
-    ax.axhline(2,c='k',ls='--')
-
-    ax.set_ylim(bottom=0, top=ymax)
-    ax.set_title(title)
-
-    return ax
-
-
-class Map:
-    """Wraps a folium map.
-
-    Allows to add markers stored in a DataFrame, see `add_markers`.
-    Supports display in Jupyter notebook.
-    """
-    def __init__(self):
-        self.map = folium.Map(
-            location=[47.642394, -122.323738],
-            tiles='openstreetmap',
-            control_scale=True,
-            zoom_start=12,
-            min_zoom=12,
-            max_zoom=18,
-        )
-
-    def _repr_html_(self):
-        """Display the HTML map in a Jupyter notebook."""
-        return self.map._repr_html_()
-
-    def add_markers(self, df, lat='lat', lon='lon', radius=None, scale=0.08,
-                    marker=folium.CircleMarker, popup_name='name', color='blue'):
-        """Add markers to map.
-
-        Args:
-             df (DataFrame): marker positions
-             lat (str): field in `df` with latitude values
-             lon (str): field in `df` with longitute values
-             radius (str or None): field in `df` with radii
-                if None, use 100
-             marker (folium marker)
-                e.g., folium.Circle  # radius in map units
-                e.g., folium.CircleMarker  # radius in screen units
-             popup_name (str): field in `df` with marker popup names
-             color (str): color of markers (one color for all markers)
-
-        Return: self
-        """
-        if radius is None:
-            radii = 100 * np.ones(len(df))  # default
-        elif radius == 'elevation':
-            radii = 2 * df[radius].values
-        else:
-            radii = scale * df[radius].values
-
-        radius_column_name_to_label = {
-            "count": "Count",
-            "AbsTripDifference": "Unbalance",
-            "elevation": "Elevation (m)"
-        }
-        radius_label = radius_column_name_to_label[radius] if radius in radius_column_name_to_label else ""
-
-        for i in range(0, len(df)):  # todo: iterrows?
-            marker(
-                location=[df.iloc[i][lat], df.iloc[i][lon]],
-                radius=radii[i],
-                popup=df.iloc[i][popup_name] + (f" - {radius_label}: {np.around(df.iloc[i][radius],1)}" if radius is not None else ""),
-                color=color,
-                fill_color=color,  # use same color for the fill
-            ).add_to(self.map)
-
-        return self  # so we can chain member calls
 
 
 def extract_destination_station_frequency_per_gender(df_trips):
-    """Extract per gender (female and male) how frequently each destination
+    """
+    Extract per gender (female and male) how frequently each destination
     station was reached for trips.
+    
+    :param df_trips: A pandas dataframe wit trips data
 
-    Args:
-        df_trips (DataFrame): bike trips
-
-    Return: (DataFrame) frequency and ratios per gender per station
-        The ratios ('ratio_f2m' and 'ratio_m2f') are the ratio of the frequency
-        between genders. This ratio informs to what extent the station is more
-        popular for one gender w.r.t. the other one.
+    :returns: A pandas dataframe with frequency and ratios per gender per station
+            The ratios ('ratio_f2m' and 'ratio_m2f') are the ratio of the frequency
+            between genders. This ratio informs to what extent the station is more
+            popular for one gender w.r.t. the other one.
     """
     nof_trips_women = len(df_trips[df_trips['gender'] == 'Female'])
     nof_trips_men = len(df_trips[df_trips['gender'] == 'Male'])
@@ -366,7 +185,7 @@ def get_trips_weekend(df_trips):
     """
     Get trip data of the weekend
 
-    :param df: a pandas dataframe with trip data
+    :param df_trips: a pandas dataframe with trip data
 
     :returns: trip data on the weekend
     """
@@ -379,7 +198,7 @@ def preprocess_trips_dataset(df_trips):
     """
     Preprocess trips dataset
 
-    :param df: a pandas dataframe with trip data
+    :param df_trips: a pandas dataframe with trip data
 
     :returns: preprocessed trip data
     """
@@ -405,7 +224,7 @@ def get_trips_top_arrival_morning_rush(df_trips, n=10):
     """
     Get trip data during morning rush
 
-    :param df: a pandas dataframe with trip data
+    :param df_trips: a pandas dataframe with trip data
     :param n: Count of datapoints to return 
 
     :returns: top n trip data points during morning rush
@@ -427,7 +246,7 @@ def get_trips_top_arrival_evening_rush(df_trips, count=10):
     """
     Get trip data during evening rush
 
-    :param df: a pandas dataframe with trip data
+    :param df_trips: a pandas dataframe with trip data
     :param n: Count of datapoints to return 
 
     :returns: top n trip data points during evening rush
@@ -449,7 +268,7 @@ def get_trip_duration_gender(df_trips):
     """
     Get trip data per gender (man/women)
 
-    :param df: a pandas dataframe with trip data
+    :param df_trips: a pandas dataframe with trip data
 
     return trip data information per gender (man/women)
     """
@@ -480,7 +299,11 @@ def get_data_stats(df):
 
 def get_trips_from_statios(df_trips):
     """
+    Get informaion about the source station
 
+    :param df_trips: A pandas dataframe with trips data
+
+    :returns: 
     """
     df_trips_from_stations = (df_trips
     .groupby('from_station_name')
@@ -497,7 +320,11 @@ def get_trips_from_statios(df_trips):
 
 def get_trips_to_stations(df_trips):
     """
+    Get informaion about the destination station
 
+    :param df_trips: A pandas dataframe with trips data
+
+    :returns: 
     """
     df_trips_to_stations = (df_trips
     .groupby('to_station_name')
@@ -509,7 +336,11 @@ def get_trips_to_stations(df_trips):
 
 def get_trips_per_stations(df_trips):
     """
+    Get trips information per station 
 
+    :param df_trips: A pandas dataframe with trips and station data
+
+    :returns: a pandas dataframe with the trips information per station
     """
     df_trips_from_stations=get_trips_from_statios(df_trips)
     df_trips_to_stations=get_trips_to_stations(df_trips)
@@ -519,7 +350,11 @@ def get_trips_per_stations(df_trips):
 
 def get_unbalanced_stations(df, n_stations=10):
     """
+    Get data for the unbalanced station
 
+    :param df_trips: A pandas dataframe with trips and station data
+
+    :returns: A pandas dataframe with data about unbalanced stations
     """
     df_trips_stations=get_trips_per_stations(df)
     df_trips_stations['TripDifference'] = df_trips_stations.to_station - df_trips_stations.from_station 
@@ -531,7 +366,11 @@ def get_unbalanced_stations(df, n_stations=10):
 
 def get_gender_count(df_trips):
     """
+    Get gender count
 
+    :param df_trips: A pandas dataframe with trips data
+
+    :returns: A pandas dataframe with gender count
     """
     gender_count = (df_trips[df_trips.gender.isin(['Male', 'Female', 'Other'])]
     .groupby('gender')
@@ -543,7 +382,11 @@ def get_gender_count(df_trips):
 
 def get_stations_ordered_by_count(df_trips):
     """
+    Get stations data ordered by count
 
+    :param df_trips: A pandas dataframe with trips data
+
+    :returns: A pandas dataframe with station data ordered by count
     """
     stations_ordered_by_count = (df_trips
     .groupby('to_station_name')
@@ -555,6 +398,13 @@ def get_stations_ordered_by_count(df_trips):
 
 
 def get_trip_hour(df_trips, days):
+    """
+    Get stations data ordered by count
+
+    :param df_trips: A pandas dataframe with trips data
+
+    :returns: A pandas dataframe with station data ordered by count
+    """
     df_trip_hour = (df_trips[df_trips.day.isin(days)]
             .groupby('hour')
             .size()
@@ -564,6 +414,13 @@ def get_trip_hour(df_trips, days):
     return df_trip_hour
 
 def get_trips_dow(df_trips):
+    """
+    Get days of the week for the trip data
+
+    :param df_trips: A pandas dataframe with trips data
+
+    :returns: A pandas dataframe with trips data and days of the week
+    """
     df_trips_dow = (df_trips
         .groupby('day')
         .agg({'tripdurationMinutes': 'median', 'starttime': 'count'})
@@ -573,6 +430,13 @@ def get_trips_dow(df_trips):
     return df_trips_dow
 
 def get_trips_moy(df_trips):
+    """
+    Get month of the year for the trip data
+
+    :param df_trips: A pandas dataframe with trips data
+
+    :returns: A pandas dataframe with trips data and month of the year
+    """
     df_trips_moy = (df_trips
         .groupby('month')
         .agg({'tripdurationMinutes': 'median', 'starttime': 'count'})
@@ -583,6 +447,13 @@ def get_trips_moy(df_trips):
 
 
 def get_trips_duration(df_trips):
+    """
+    Get trips duration
+
+    :param df_trips: A pandas dataframe with trips data
+
+    :returns: A pandas dataframe with trips duration
+    """
     df_trip_duration = (df_trips
     .groupby(['to_station_name', 'from_station_name'])
     .tripdurationMinutes
@@ -596,6 +467,13 @@ def get_trips_duration(df_trips):
 
 
 def get_unbalanced_trip_duration(df, n_stations=10):
+    """
+    Get trips duration for the unbalanced stations
+
+    :param df_trips: A pandas dataframe with trips data
+
+    :returns: A pandas dataframe with trips duration of the unbalanced stations
+    """
     
     df_trip_duration=get_trips_duration(df)
     df_trip_duration = df_trip_duration[df_trip_duration.to_station != df_trip_duration.from_station]
@@ -608,6 +486,13 @@ def get_unbalanced_trip_duration(df, n_stations=10):
     return df_trip_duration
 
 def get_arrival_morning_rush_hour(df):
+    """
+    Get morning rush hours for arrival trips
+
+    :param df_trips: A pandas dataframe with trips data
+
+    :returns: A pandas dataframe with morning rush hours for arrival trips
+    """
 
     week_days = get_weekdays()
     df_trips_topArrival_morning_rush = get_trips_top_arrival_morning_rush(df)
@@ -622,6 +507,13 @@ def get_arrival_morning_rush_hour(df):
 
 
 def get_arrival_station_frequency_wm_morning_rush_hour(df):
+    """
+    Get the frequency of stations during morning rush hours for arrival trips
+
+    :param df_trips: A pandas dataframe with trips data
+
+    :returns: A pandas dataframe with morning rush hours for arrival trips
+    """
     
     df_tripsTo_topStationArrival_morningRushHour=get_arrival_morning_rush_hour(df=df)
     df_arrivalStationFrequency_wm_morningRushHour = (
@@ -632,6 +524,13 @@ def get_arrival_station_frequency_wm_morning_rush_hour(df):
 
 
 def get_arrival_station_frequency_wm_weekend_women(df, n_stations=10):
+    """ 
+    Get the frequency of arrival stations during weekend for women
+
+    :param df_trips: A pandas dataframe with trips data
+
+    :returns: A pandas dataframe with the frequency of arrival stations during weekend for women
+    """
     
     df_trips_weekend=get_trips_weekend(df)
     df_arrivalStationFrequency_wm_weekend = extract_destination_station_frequency_per_gender(df_trips_weekend)
@@ -642,6 +541,13 @@ def get_arrival_station_frequency_wm_weekend_women(df, n_stations=10):
     return df_arrivalStationFrequency_wm_weekend_women
 
 def get_arrival_station_frequency_wm_weekend_men(df, n_stations=10):
+    """ 
+    Get the frequency of arrival stations during weekend for men
+
+    :param df_trips: A pandas dataframe with trips data
+
+    :returns: A pandas dataframe with the frequency of arrival stations during weekend for men
+    """
     
     df_trips_weekend=get_trips_weekend(df)
     df_arrivalStationFrequency_wm_weekend = extract_destination_station_frequency_per_gender(df_trips_weekend)

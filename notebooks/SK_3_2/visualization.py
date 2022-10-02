@@ -2,13 +2,7 @@ import seaborn as sns
 import matplotlib.pyplot as plt
 from support import *
 import folium
-from elucidata_demonstrator_3_2 import (
-    assert_correct_package_versions,
-    Map,
-    plot_barplot_with_labels,
-    plot_double_barplot,
-    extract_destination_station_frequency_per_gender,
-)
+from matplotlib import rcParams
 
 
 def plot_difference_between_morning_evening_arrival(df):
@@ -16,6 +10,8 @@ def plot_difference_between_morning_evening_arrival(df):
     Plot the difference between morning and evening rush for the stations of arrival on the map
 
     :param df: A pandas dataframe with station data
+
+    :returns: Map object
     """
     m = Map()
     m.add_markers(get_trips_top_arrival_morning_rush(df), popup_name='to_station_name',
@@ -27,6 +23,14 @@ def plot_difference_between_morning_evening_arrival(df):
 
 
 def plot_unbalanced_stations(df, n_stations=10):
+    """
+    Plot unbalanced stations on the map
+
+    :param df: A pandas dataframe with station data
+    :param n_stations: Number of stations to plot
+
+    :returns: Map object
+    """
     m = Map()
     df_topUnbalanced_stations = get_unbalanced_stations(df, n_stations=n_stations)
     m.add_markers(df_topUnbalanced_stations[df_topUnbalanced_stations['TripDifference'] > 0],
@@ -287,7 +291,6 @@ def plot_trips_per_station(df):
 def plot_trip_duration_over_time(df, time='both', axes=None):
     """
     Plot trip duration over time
-
     
     :param df: A pandas dataframe with trip data
     :param time: The period of time to be used for visualizing the trip duration.
