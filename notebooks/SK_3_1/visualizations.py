@@ -26,6 +26,7 @@ days_of_week = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturda
 
 
 def plot_map_nodes(data):
+    """Plot the different nodes on a map"""
     NW58th_22nd = ['NW_58th_St', [47.670917, -122.384767]]
     NE39th_62nd = ['39th_Ave', [47.673974, -122.285785]]
     Spokane_street = ['Spokane_St', [47.571491, -122.345516]]
@@ -46,6 +47,7 @@ def plot_map_nodes(data):
 
 
 def get_totals_node(data):
+    """Get total crossings for each node"""
     indexes = pd.Index(data['Timestamp'].unique(), name='Timestamp')
     data_totals_node = pd.DataFrame(index=indexes)
     for node in data['Node'].unique():
@@ -57,6 +59,7 @@ def get_totals_node(data):
 
 
 def normalize_and_resample(df, resample, normalize, columns):
+    """Apply resampling and normalizing to the specified columns"""
     df = df.copy().reset_index().sample(10000)
     df = df.sort_values(by='Timestamp')
 
@@ -76,10 +79,10 @@ def normalize_and_resample(df, resample, normalize, columns):
 
 
 def plot_activity_nodes(data):
+    """Draw interactive plot of the number of crossings for each node"""
     df = get_totals_node(data)
 
     def make_plot(resample, normalize):
-        # columns = reordered_columns
         df0 = normalize_and_resample(df, resample, normalize, reordered_columns)
         series = [df0[col] for col in reordered_columns]
         fig = vp.plot_multiple_time_series(series, show_time_frame=False, show_time_slider=False)
@@ -105,6 +108,7 @@ def plot_activity_nodes(data):
 
 
 def plot_calendar_heatmap(data):
+    """Draw calendar heatmap of crossings for each year with interactive choice of color map"""
     def heatmap_with_cmap_selector(df, cmaps=None):
         cdict = {'green': ((0.0, 0.0, 0.0),   # no red at 0
                            (0.5, 1.0, 1.0),   # all channels set to 1.0 at 0.5 to create white
@@ -148,6 +152,7 @@ def plot_calendar_heatmap(data):
 
 # noinspection PyUnusedLocal
 def draw_heatmap(data, draw_colorbar=True, **kwargs):
+    """Draw a heatmap of total crossings"""
     d = data.pivot(index='DayOfWeek', columns='Hour', values='Total')
     cbar_par = {'label': 'Total crossings', 'orientation': 'horizontal'} if draw_colorbar else None
     sb.heatmap(d, square=True, linewidths=0.1, xticklabels='', yticklabels='', cbar=draw_colorbar,
@@ -155,12 +160,14 @@ def draw_heatmap(data, draw_colorbar=True, **kwargs):
 
 
 def draw_heatmap_crossings(data, node='Fremont_Bridge', draw_colorbar=True):
+    """Draw a heatmap of total crossings for a specific node"""
     node_data = data[data.Node == node]
     node_df = node_data[['Total', 'DayOfWeek', 'Hour']].groupby(['DayOfWeek', 'Hour']).sum().reset_index()
     draw_heatmap(node_df, draw_colorbar)
 
 
 def small_multiples_crossings(data):
+    """Draw heatmaps of total crossings for each node in small multiples"""
     all_nodes_df = (data[['Total', 'DayOfWeek', 'Hour', 'Node']]
                     .groupby(['Node', 'DayOfWeek', 'Hour'])
                     .sum()
@@ -170,15 +177,17 @@ def small_multiples_crossings(data):
 
 
 def draw_circular_heatmap_crossings(data, node='Fremont_Bridge'):
+    """Draw a circular heatmap of total crossings for a specific node"""
     node_data = data[data.Node == node]
     node_df = node_data[['Total', 'DayOfWeek', 'Hour']].groupby(['DayOfWeek', 'Hour']).sum().reset_index()
     node_df_pivoted = node_df.pivot(index='DayOfWeek', columns='Hour', values='Total')
     node_df_pivoted.index = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
-    plot_circular_heatmap(node_df_pivoted, inner_r=0.1, legend_name='Total crossings', title="Hour", cmap='YlGn')
+    plot_circular_heatmap(node_df_pivoted, inner_r=0.1, colorbar_name='Total crossings', title="Hour", cmap='YlGn')
 
 
 # noinspection PyUnusedLocal
 def streamgraph_plot(data, col1, col2, **kwargs):
+    """Draw a steamgraph plot of crossings, with col1 above and col2 below"""
     plot_df = data[[col1, col2, 'Time']].groupby('Time').mean()
     plot_df[col2] = -plot_df[col2]
     xticks = pd.date_range('00:00:00', '23:59:59', freq='240T').astype(str)
@@ -190,6 +199,8 @@ def streamgraph_plot(data, col1, col2, **kwargs):
 
 
 def plot_streamgraph_small_multiples(data):
+    """Draw steamgraph plots for each day of the week in small multiples, with one direction above and
+    the other below"""
     def make_plot(node, season):
         plot_data = data[data['Node'] == node]
         if season > 0:
@@ -216,6 +227,7 @@ def plot_streamgraph_small_multiples(data):
 
 
 def plot_results_pca(pivoted_data_per_node):
+    """Plot the results of PCA for the pivoted data per node"""
     pivoted_values_per_node = pivoted_data_per_node.reset_index().drop(['Date', 'Node'], axis=1).values
     pca_df = pd.DataFrame(PCA(n_components=2).fit_transform(pivoted_values_per_node), columns=['comp1', 'comp2'])
     g = sb.lmplot(data=pca_df, x='comp1', y='comp2', fit_reg=False)
@@ -223,6 +235,8 @@ def plot_results_pca(pivoted_data_per_node):
 
 
 def plot_pca_per_day(df):
+    """Draw plot of the results of PCA with each day of the week in a different color, with interactive choice
+     of the node and of the color map"""
 
     def make_plot(cmap, node):
         node_data = df[df['Node'] == node].dropna()
@@ -261,7 +275,7 @@ def plot_pca_per_day(df):
 
 
 def plot_pca_clusters(df):
-
+    """Plot the results of clustering with a Gaussian Mixture Model after PCA"""
     def make_plot(node):
         node_data = df[df['Node'] == node].dropna()
         pivoted_for_pca = node_data.pivot_table(values='Total', index='Date', columns='Hour').dropna()
@@ -288,44 +302,9 @@ def plot_pca_clusters(df):
     interact(make_plot, node=controller_nodes)
 
 
-def plot_pca_clustering_assessment(df):
-
-    def make_plot(node):
-        node_data = df[df['Node'] == node].dropna()
-        pivoted_for_pca = node_data.pivot_table(values='Total', index='Date', columns='Hour').dropna()
-        pca_df = pd.DataFrame(PCA(n_components=2).fit_transform(pivoted_for_pca.values),
-                              columns=['comp1', 'comp2'])
-
-        gmm = GaussianMixture(2, covariance_type='full', random_state=0)
-        gmm.fit(pca_df)
-        pca_df['label'] = gmm.predict(pca_df)
-        pca_df['DayOfWeek'] = pd.to_datetime(pivoted_for_pca.index).dayofweek
-        pca_df['WeekDay'] = (pca_df['DayOfWeek'] < 5)  # .astype(int)
-        # print(pca_df[['WeekDay', 'label']])
-        value_counts = pca_df['label'].value_counts()
-        if value_counts[0] < value_counts[1]:
-            pca_df['Correctly labeled'] = pca_df['WeekDay'] == pca_df['label']
-        else:
-            pca_df['Correctly labeled'] = pca_df['WeekDay'] != pca_df['label']
-
-        p = sb.lmplot(data=pca_df, x='comp1', y='comp2', hue='Correctly labeled', fit_reg=False,
-                      palette=sb.color_palette("Set1", 2), hue_order=[True, False])
-        p = p.set_axis_labels('', '')
-        p = p.set_xticklabels('')
-        p.set_yticklabels('')
-
-    options = [(node, node) for node in reordered_nodes if node not in ['NW_58th_St', '26th_Ave']]
-
-    controller_nodes = vpwt.get_controller({'widget': 'Dropdown',
-                                            'options': options,
-                                            'value': 'Fremont_Bridge',
-                                            'description': 'Node'})
-
-    interact(make_plot, node=controller_nodes)
-# plot_pca_clusters_compare(data)
-
-
 def plot_heatmap_outliers(data, node='Fremont_Bridge'):
+    """Draw a heatmap of the weekdays assigned to the weekend cluster after clustering using a Gaussian Mixture Model
+    on the PCA data, showing whether the dates corresponded to a holiday"""
     node_data = data[data['Node'] == node].dropna()
     pivoted_for_pca = node_data.pivot_table(values='Total', index='Date', columns='Hour').dropna()
     pca_df = pd.DataFrame(PCA(n_components=2).fit_transform(pivoted_for_pca.values), columns=['comp1', 'comp2'])
