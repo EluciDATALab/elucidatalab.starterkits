@@ -1,7 +1,6 @@
 # ©, 2022, Sirris
 # owner: HCAB
 
-import pkg_resources
 import os
 import pandas as pd
 
