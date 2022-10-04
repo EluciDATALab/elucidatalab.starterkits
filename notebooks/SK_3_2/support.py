@@ -1,9 +1,11 @@
+# ©, 2022, Sirris
+# owner: AEGH
+
 import datetime as dt
 import pandas as pd
 import numpy as np
 from starterkits import pipeline, DATA_PATH
 import zipfile
-
 
 def extract_destination_station_frequency_per_gender(df_trips):
     """
@@ -309,12 +311,14 @@ def get_trips_from_statios(df_trips):
     .groupby('from_station_name')
     .agg({'from_station_id': 'count',
           'from_station_lat': 'first',
-          'from_station_lon': 'first'})
+          'from_station_lon': 'first',
+          'from_station_elevation':'first'})
     .reset_index()
     .rename(columns={'from_station_name': 'station_name',
                      'from_station_id': 'from_station',
                      'from_station_lat': 'lat',
-                     'from_station_lon': 'lon'}))
+                     'from_station_lon': 'lon',
+                     'from_station_elevation':'elevation'}))
     
     return df_trips_from_stations
 

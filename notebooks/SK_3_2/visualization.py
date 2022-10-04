@@ -1,3 +1,6 @@
+# ©, 2022, Sirris
+# owner: AEGH
+
 import seaborn as sns
 import matplotlib.pyplot as plt
 from support import *
@@ -40,10 +43,29 @@ def plot_unbalanced_stations(df, n_stations=10):
 
     return m
 
-
-def plot_trip_duration(df):
+def plot_unbalanced_stations_with_elevation(df, n_stations=10):
     """
-    Plots the distribution of the trip duration
+    Plot unbalanced stations on the map using elevation
+
+    :param df: A pandas dataframe with trip and station data
+    :param n_stations: Number of stations to plot
+
+    :returns: Map object
+    """
+    m = Map()
+    df = df.copy()
+    df_topUnbalanced_stations = get_unbalanced_stations(df, n_stations=n_stations)
+    m.add_markers(df_topUnbalanced_stations[df_topUnbalanced_stations['TripDifference'] > 0],
+                  marker=folium.Circle ,radius='elevation', popup_name='station_name', color='green')
+    m.add_markers(df_topUnbalanced_stations[df_topUnbalanced_stations['TripDifference'] <= 0],
+                  marker=folium.Circle, radius='elevation', popup_name='station_name', color='red')
+
+    return m
+
+
+def plot_trip_duration_values(df):
+    """
+    Plots trips duration values
 
     :param df: A pandas dataframe with trip data
 
@@ -60,6 +82,25 @@ def plot_trip_duration(df):
     print(f"The longest trip lasts: {round(df.tripdurationMinutes.max() / 60)} hours")
 
     return ax
+
+def plot_trips_duration_statistics(df):
+    """
+    Plots trips duration statistics
+
+    :param df: A pandas dataframe with trip data
+
+    :returns: an axis of the subplot
+    """
+
+    df = df.copy()
+    fig,axes=plt.subplots(1,3, figsize=(15,6))
+    sns.boxplot(y="tripdurationMinutes", data=df, ax=axes[0])
+    sns.boxplot(y="tripdurationMinutes", data=df, ax=axes[1], showfliers=False)
+    sns.violinplot(x=df["tripdurationMinutes"], ax=axes[2])
+    axes[0].set_ylabel('Trip duration (minutes)', fontsize=16)
+    axes[1].set_ylabel('Trip duration (minutes)', fontsize=16)
+    axes[2].set_ylabel('Trip duration (minutes)', fontsize=16)
+    fig.suptitle("Distribution of the trip durations using boxplots (left) and violin plot (right))", size=20, y=0.95);
 
 
 def plot_user_age(df):
@@ -137,14 +178,8 @@ def plot_trips_per_hour(df):
     fig, axes = plt.subplots(1, 2, subplot_kw=dict(polar=True), figsize=(18, 9))
     fig.suptitle('Number of Trips Per Hour for Weekdays (left) and Weekends (right)')
     for ax, w in zip(axes, ['weekday', 'weekend']):
-        # df_trip_hour = (df_trips[df_trips.day.isin(week_days[w])]
-        #     .groupby('hour')
-        #     .size()
-        #     .reset_index(name='ct'))
-        # df_trip_hour.ct = df_trip_hour.ct / len(week_days[w])  # normalize by number of days
 
         df_trip_hour = get_trip_hour(df, week_days[w])
-
         # make a polar plot
         df_trip_hour['theta'] = np.linspace(0.0, 2 * np.pi, len(df_trip_hour), endpoint=False)  # 24 hours
         width = (2 * np.pi) / len(df_trip_hour)  # width of each bin on the plot
