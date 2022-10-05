@@ -14,7 +14,7 @@ To guide you in the process of selecting the most appropriate Starter Kit(s) for
 the specific data requirements that need to be satisfied in order to realize such kind of data-driven solution, as well as
 - a clear description of the use case we used to illustrate the process.
 
-These passports in itself thus already provide you with a lot of valuable knowledge on the types of problems you can solve with a data-driven solution, instantiated with examples from a variety of industrial domains.
+These passports in itself already provide you with a lot of valuable knowledge on the types of problems you can solve with a data-driven solution, instantiated with examples from a variety of industrial domains.
 
 In addition, each Starter Kit is accompanied by complementary video tutorials to guide you through the different steps AI-based methodology for several industrial use cases, complemented with autodidactic video tutorials. You can access these on our webpage: https://elucidatalab.github.io
 
