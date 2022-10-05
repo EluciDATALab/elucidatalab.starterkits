@@ -163,12 +163,11 @@ def get_data(force=False):
     :param force: to force the reload of the data from artemis
     """ 
 
-    zip_fname = pipeline.download_from_repo(starterkit='SK_3_2',
+    zip_path = pipeline.download_from_repo(starterkit='SK_3_2',
                                 dataset = 'SK-3-2-Pronto.zip',
                                 fname = str(DATA_PATH / 'SK_3_2' / 'SK-3-2-Pronto.zip'),
                                 force=force)
-
-    extract_csv_file(zip_fname=zip_fname)
+    extract_csv_file(zip_fname=zip_path)
 
 
 def get_weekdays():
