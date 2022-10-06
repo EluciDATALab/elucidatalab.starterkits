@@ -270,7 +270,7 @@ def compress_df_ssdt(df, group, mode='ZMEAN'):
         compress_data = ssdt(data, mode=mode)
         df_temp = pd.DataFrame(compress_data, columns=['time', 'signal']).dropna()
         df_temp[group] = name
-        df_return = df_return.append(df_temp)
+        df_return = pd.concat([df_return, df_temp])
     df_return['time'] = np.round(df_return.time).astype(int)
     return df_return
 
@@ -298,7 +298,7 @@ def compress_df_ssdt_multi(df, signals, group, mode='ZMEAN'):
         compress_data = ssdt_multi(data, mode)
         df_temp = pd.DataFrame(compress_data, columns=['time'] + signals).dropna()
         df_temp[group] = name
-        df_return = df_return.append(df_temp)
+        df_return = pd.concat([df_return, df_temp])
     df_return['time'] = np.round(df_return.time).astype(int)
     #  df_return.set_index('time', inplace=True)
     return df_return
