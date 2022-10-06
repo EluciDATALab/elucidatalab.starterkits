@@ -1,127 +1,29 @@
-ansi2html==1.6.0
-anyio==3.6.1
-appnope==0.1.2
-argon2-cffi==21.1.0
-asttokens @ file:///opt/conda/conda-bld/asttokens_1646925590279/work
-attrs==21.4.0
-Babel==2.10.3
-backcall @ file:///home/ktietz/src/ci/backcall_1611930011877/work
-beautifulsoup4==4.11.1
-bleach==4.1.0
-Brotli==1.0.9
-bump2version==1.0.1
-certifi==2021.5.30
-cffi==1.15.0
-charset-normalizer==2.0.4
-click==8.0.1
-colorama @ file:///tmp/build/80754af9/colorama_1607707115595/work
-colorlover==0.3.0
-coverage==5.5
+calmap==0.0.9
 cufflinks==0.17.3
-cycler==0.10.0
-darts==0.17.1
-dash==2.0.0
-dash-core-components==2.0.0
-dash-html-components==2.0.0
-dash-table==5.0.0
-debugpy==1.6.0
-decorator @ file:///opt/conda/conda-bld/decorator_1643638310831/work
-defusedxml==0.7.1
-entrypoints==0.4
-executing @ file:///opt/conda/conda-bld/executing_1646925071911/work
-fastjsonschema==2.15.3
-Flask==2.0.1
-Flask-Compress==1.10.1
-geographiclib==1.52
-h5py==3.4.0
-idna==3.2
-importlib-metadata==4.11.4
-ipykernel==6.15.0
+dash==2.6.2
+dash_bootstrap_components==1.2.1
+dash_core_components==2.0.0
+dash_html_components==2.0.0
+dash_table==5.0.0
+folium==0.12.1.post1
+geographiclib==2.0
+holidays==0.16
 ipypb==0.5.2
-ipython @ file:///C:/ci/ipython_1651601994004/work
-ipython-genutils==0.2.0
-ipywidgets==7.6.4
-isodate==0.6.0
-itsdangerous==2.0.1
-jedi @ file:///C:/ci/jedi_1644315428289/work
-Jinja2==3.1.2
-joblib==1.0.1
-json5==0.9.8
-jsonschema==4.6.0
-jupyter-client==7.3.4
-jupyter-core==4.10.0
-jupyter-dash==0.4.0
-jupyter-server==1.18.0
-jupyterlab==3.4.3
-jupyterlab-pygments==0.2.2
-jupyterlab-server==2.14.0
-jupyterlab-widgets==1.0.1
-kiwisolver==1.4.3
-MarkupSafe==2.1.1
-matplotlib==3.4.3
-matplotlib-inline @ file:///tmp/build/80754af9/matplotlib-inline_1628242447089/work
-mistune==0.8.4
-nbclassic==0.3.7
-nbclient==0.6.4
-nbconvert==6.5.0
-nbformat==5.4.0
+ipython==8.5.0
+ipywidgets==8.0.2
+joblib==1.2.0
+jupyter_dash==0.4.2
+matplotlib==3.6.0
 ndtamr==0.3
-nest-asyncio==1.5.5
-nfoursid==1.0.0
-notebook==6.4.3
-notebook-shim==0.1.0
-numpy==1.22.4
-packaging==21.3
-pandas==1.3.2
-pandocfilters==1.5.0
-parso @ file:///opt/conda/conda-bld/parso_1641458642106/work
-pexpect==4.8.0
-pickleshare @ file:///tmp/build/80754af9/pickleshare_1606932040724/work
-Pillow==9.1.1
-plotly==5.3.1
-prometheus-client==0.11.0
-prompt-toolkit @ file:///tmp/build/80754af9/prompt-toolkit_1633440160888/work
-psutil==5.9.1
-ptyprocess==0.7.0
-pure-eval @ file:///opt/conda/conda-bld/pure_eval_1646925070566/work
+numpy==1.23.3
+pandas==1.5.0
+plotly==5.10.0
 pyclustering==0.10.1.2
-pycodestyle==2.7.0
-pycparser==2.21
-pydocstyle==6.1.1
-Pygments @ file:///opt/conda/conda-bld/pygments_1644249106324/work
-pyparsing==3.0.9
-pyrsistent==0.18.1
-python-dateutil==2.8.2
-pytz==2021.1
-pywin32==304
-pywinpty==2.0.5
-pyzmq==23.2.0
-rdflib==6.0.0
-requests==2.26.0
-retrying==1.3.3
-scikit-learn==1.1.1
-scipy==1.7.0
-seaborn==0.11.2
-Send2Trash==1.8.0
-Shapely==1.7.1
-six @ file:///tmp/build/80754af9/six_1644875935023/work
-sniffio==1.2.0
-snowballstemmer==2.1.0
-soupsieve==2.3.2.post1
-stack-data @ file:///opt/conda/conda-bld/stack_data_1646927590127/work
--e git+https://github.com/EluciDATALab/elucidatalab.starterkits.git@44f4c43099d8ef193be775940e8e56cf51159413#egg=starterkits&subdirectory=src
-tenacity==8.0.1
-terminado==0.11.1
-threadpoolctl==2.2.0
-tinycss2==1.1.1
-tornado==6.1
-tqdm==4.64.0
-traitlets==5.3.0
-urllib3==1.26.6
-wcwidth @ file:///Users/ktietz/demo/mc3/conda-bld/wcwidth_1629357192024/work
-webencodings==0.5.1
-websocket-client==1.3.3
-Werkzeug==2.0.1
-widgetsnbextension==3.5.1
-wincertstore==0.2
-zipp==3.8.0
+requests==2.28.1
+scikit_learn==1.1.2
+scipy==1.9.1
+seaborn==0.12.0
+setuptools==57.4.0
+statsmodels==0.13.2
+tensorflow==2.10.0
+tqdm==4.64.1
