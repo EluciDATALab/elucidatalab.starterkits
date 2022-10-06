@@ -25,10 +25,10 @@ Each Starter Kit has its own folder in the notebooks/ directory. In it, there ar
 - a supporting script with data loading and processing functions (support.py)
 - a visualizations script with the code to generate the graphics in the notebook (visualizations.py)
 
-In addition, Starter Kit uses code from the starterkits package, which can be installed either via the requirements.txt file, either with:
+In addition, Starter Kit uses code from the starterkits package, which should be installed with:
 
 ``` bash
-pip install src/
+pip install -e src/
 ```
 
 The notebooks have been developed in python 3.7. The required packages with specific versions are listed in requirements.txt.
