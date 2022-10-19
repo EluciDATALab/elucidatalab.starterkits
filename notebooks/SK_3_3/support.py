@@ -1,7 +1,9 @@
 # ©, 2022, Sirris
+# owner: MDHN
 
 import os
 import zipfile
+import warnings
 import numpy as np
 import pandas as pd
 import datetime as dt
@@ -9,6 +11,7 @@ import datetime as dt
 from geopy.distance import geodesic
 from elucidata.resources import pipeline
 
+warnings.filterwarnings('ignore')
 
 def load_otp_data():
     """
@@ -123,8 +126,9 @@ def exclude_remaining_cases(otp, train_view):
     df_otp = otp.copy()
     df_train_view = train_view.copy()
     train_run = get_train_run(df=df_otp)
-    df_otp = df_otp.merge(train_run[train_run.single_pass==True], on=['train_id', 'next_station', 'date'])
-    df_train_view = df_train_view.merge(train_run[train_run.single_pass==True], on=['train_id', 'next_station', 'date'])
+    df_otp = df_otp.merge(train_run[train_run.single_pass == True], on=['train_id', 'next_station', 'date'])
+    df_train_view = df_train_view.merge(train_run[train_run.single_pass == True],
+                                        on=['train_id', 'next_station', 'date'])
 
     return df_otp, df_train_view
 
@@ -202,8 +206,8 @@ def get_otp_overview(df):
     
     df = df.copy()
     overview = {'Number of stations': df.next_station.nunique(),
-                'Number of trains': df.train_id.nunique(),
-                'Number of train rides': df[['train_id', 'date']].drop_duplicates().size,
+                'Number of train ids': df.train_id.nunique(),
+                'Number of train runs': df[['train_id', 'date']].drop_duplicates().size,
                 'Time range': '%s to %s' % (dt.datetime.strftime(df.date.min(),
                                                                  '%d %b %Y'),
                                             dt.datetime.strftime(df.date.max(),
@@ -279,7 +283,7 @@ def define_threshold(df, percentile=75):
     :return rush hour
     """
 
-    return np.nanpercentile(df[df.isWeekend==False].groupby(['dayOfTheWeek', 'hour'])
+    return np.nanpercentile(df[df.isWeekend == False].groupby(['dayOfTheWeek', 'hour'])
                             .train_id.apply(lambda x: len(set(x))), percentile)
 
 
@@ -293,7 +297,7 @@ def define_train_density(df):
     """
 
     df = df.copy()
-    train_density = df[df.isWeekend==False].groupby('hour').train_id.apply(lambda x: len(set(x))).reset_index(name='ct')
+    train_density = df[df.isWeekend == False].groupby('hour').train_id.apply(lambda x: len(set(x))).reset_index(name='ct')
     return train_density  
 
 
@@ -315,14 +319,14 @@ def define_rush_hour(df, percentile=75):
 
     rush_hours = train_density[train_density.ct > threshold].hour
     print("Identified rush hours are: %s." % ', '.join([str(hour) for hour in rush_hours]))
-    df['isRushHour'] = (df.isWeekend==False) & (df.hour.isin(rush_hours))
+    df['isRushHour'] = (df.isWeekend == False) & (df.hour.isin(rush_hours))
 
     return df   
 
 
 def calculate_rank_stop(df):
     """
-    Calculate rank stop
+    Calculate rank of the stops
 
     :param df. a pandas dataframe that contains OTP data
 
@@ -330,14 +334,14 @@ def calculate_rank_stop(df):
     """
 
     df = df.copy()
-    df['rk_stop'] = df.groupby(['train_id', 'date']).timeStamp.rank(ascending=True, method='dense')
+    df['rank'] = df.groupby(['train_id', 'date']).timeStamp.rank(ascending=True, method='dense')
 
     return df                
 
 
 def calculate_distance_between_stations(df_otp, df_train_view):
     """
-    Calculate the distance between the stations
+    Calculate the distance between the stations in km.
 
     :param df_otp. a pandas dataframe that contains otp data
     :param df_train_view. a pandas dataframe that contains df_train_view data
@@ -350,7 +354,7 @@ def calculate_distance_between_stations(df_otp, df_train_view):
     df_train_view = df_train_view.copy()
 
     # create a dataset with coordinates for each train station per train_id and date
-    df_coords = df_otp[['train_id', 'date', 'rk_stop', 'next_station', 'delay']].merge(
+    df_coords = df_otp[['train_id', 'date', 'rank', 'next_station', 'delay']].merge(
         df_train_view.groupby('next_station').agg({'lon': 'mean', 'lat': 'mean'}).reset_index(),
         on='next_station')
 
@@ -363,7 +367,7 @@ def calculate_distance_between_stations(df_otp, df_train_view):
     uni_runs = df_coords[['train_id', 'date']].drop_duplicates()
 
     # shift next_station column to align in each row the current station and the upcoming one
-    df_coords = df_coords.sort_values('rk_stop')
+    df_coords = df_coords.sort_values('rank')
     df_coords['upcoming_station'] = df_coords.groupby(['train_id', 'date']).next_station.shift(1)
 
     # add coordinates for upcoming station
@@ -397,11 +401,11 @@ def calculate_cumulative_distance_along_train_run(df, uni_runs):
 
     df = df.copy()
 
-    df = df.sort_values('rk_stop')
+    df = df.sort_values('rank')
     df['cum_distance'] = df.groupby(['train_id', 'date']).distance.cumsum()
 
     # show random train run
-    random_train_run = df.merge(uni_runs.sample(1), on=['train_id', 'date'])[['train_id', 'rk_stop',
+    random_train_run = df.merge(uni_runs.sample(1), on=['train_id', 'date'])[['train_id', 'rank',
                                                                               'next_station', 'delay',
                                                                               'upcoming_station', 'distance',
                                                                               'cum_distance']]
@@ -419,7 +423,7 @@ def add_cum_delay(df):
     """
 
     df = df.copy()
-    df = df.sort_values('rk_stop')
+    df = df.sort_values('rank')
     df['cum_delay'] = df.groupby(['train_id', 'date']).delay.cumsum()
 
     return df
@@ -438,7 +442,7 @@ def add_distance(df_otp, df_coords):
     df_otp = df_otp.copy()
     df_coords = df_coords.copy()
 
-    df_otp = df_otp.sort_values('rk_stop')
+    df_otp = df_otp.sort_values('rank')
     df_otp = df_otp.merge(df_coords[['train_id', 'date', 'next_station', 'distance', 'cum_distance']],
                           on=['train_id', 'date', 'next_station'])
 
