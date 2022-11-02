@@ -3,19 +3,12 @@
 
 import re
 import pandas as pd
-import numpy as np
 import matplotlib.pyplot as plt
-import seaborn as sb
-from plotly.subplots import make_subplots
-import plotly.graph_objects as go
-from plotly.graph_objects import Layout
-from copy import deepcopy
-import ipywidgets as widgets
 from ipywidgets import interact
 from IPython.utils import io
 
 from starterkits.visualization import vis_plotly_widgets as vpw
-from support import LstmApp, get_test_scores
+from support import LstmApp
 
 import cufflinks as cf
 cf.go_offline(connected=True)
