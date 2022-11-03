@@ -72,12 +72,12 @@ def plot_trip_duration_values(df):
     :returns: an axis of the subplot
     """
     _, ax = plt.subplots(figsize=(16, 6))
-    g = sns.distplot(df.tripdurationMinutes, kde=False, bins=200, ax=ax)
+    g = sns.histplot(df.tripdurationMinutes, kde=False, bins=200, ax=ax)
     g.set_xlabel('Trip duration (minutes)', fontsize=16)
     g.set_ylabel('Number of trips', fontsize=16)
     g.tick_params(axis='both', which='major', labelsize=14)
-    g.set_title('Distribution of Trip Duration Values (in minutes)', fontsize=16)
-    g.set(yscale="log");
+    g.set_title('Distribution of Trip Duration Values (in minutes)', fontsize=16);
+    g.set(yscale="log")
 
     print(f"The longest trip lasts: {round(df.tripdurationMinutes.max() / 60)} hours")
 
@@ -262,7 +262,7 @@ def plot_trips_over_days(df):
 
     :param df: A pandas dataframe with trip data
     """
-    g = sns.factorplot(x='day', data=df, size=5, aspect=2, kind='count', hue='usertype')
+    g = sns.catplot(x='day', data=df, height=5, aspect=2, kind='count', hue='usertype')
     g.set(ylabel='number of trips')
     g.fig.suptitle('Number of Trips per Day and per User Type');
 
