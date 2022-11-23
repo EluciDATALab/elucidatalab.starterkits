@@ -5,7 +5,7 @@ import os as _os
 
 from pathlib import Path
  
-PROJECT_PATH = Path(__file__).parent.parent.parent.absolute()
+PROJECT_PATH = Path(__file__).parent.parent.absolute()
 DATA_PATH = PROJECT_PATH / 'data' 
 LOG_PATH = PROJECT_PATH / 'log'
 

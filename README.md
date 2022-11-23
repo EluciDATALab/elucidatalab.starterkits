@@ -28,7 +28,7 @@ Each Starter Kit has its own folder in the notebooks/ directory. In it, there ar
 In addition, Starter Kit uses code from the starterkits package, which should be installed with:
 
 ``` bash
-pip install -e src/
+pip install -e .
 ```
 
 The notebooks have been developed in python 3.7. The required packages with specific versions are listed in requirements.txt.
