@@ -166,18 +166,16 @@ def delay_jointplot(df, uni_runs):
 
     # plot delays per stop
     data1 = df_coords_sub.query("distance < 10")
-    correlation_present1 = _is_correlation_present(data1['distance'], data1['delay'])
     g1 = sb.jointplot(x='distance', y='delay', data=data1, height=6,
-                      kind='reg', fit_reg=correlation_present1,
+                      kind='reg', fit_reg=False,
                       scatter_kws={'alpha': 0.1}, line_kws={"color": "red"})
     g1.fig.suptitle('Delay as a function of distance between stations (limited to distances < 10km)')
     g1.set_axis_labels('Distance (km)', 'Delay (min)', fontsize=12)
     g1.fig.tight_layout()
 
     # calculate median delay per stop # and display
-    correlation_present2 = _is_correlation_present(df_coords_sub['cum_distance'], df_coords_sub['delay'])
     g2 = sb.jointplot(x='cum_distance', y='delay', data=df_coords_sub, height=6,
-                      kind='reg', fit_reg=correlation_present2,
+                      kind='reg', fit_reg=False,
                       scatter_kws={'alpha': 0.1}, line_kws={"color": "red"})
     g2.fig.suptitle('Delay as a function of cumulative distance of train run')
     g2.set_axis_labels('Cumulative distance (km)', 'Delay (min)', fontsize=12)
@@ -198,18 +196,16 @@ def total_train_run_distance_joint_plot(df):
     df_run.columns = ['distance', 'delay_sum', 'delay_last']
 
     # plot delays per stop
-    correlation_present1 = _is_correlation_present(df_run['distance'], df_run['delay_sum'])
     g1 = sb.jointplot(x='distance', y='delay_sum', data=df_run, kind='reg', height=6,
-                      fit_reg=correlation_present1,
+                      fit_reg=False,
                       scatter_kws={'alpha': 0.1}, line_kws={"color": "red"})
     g1.fig.suptitle('Total train run delay as a function total run distance')
     g1.set_axis_labels('Distance (km)', 'Delay (min)', fontsize=12)
     g1.fig.tight_layout()
 
     # calculate median delay per stop # and display
-    correlation_present2 = _is_correlation_present(df_run['distance'], df_run['delay_sum'])
     g2 = sb.jointplot(x='distance', y='delay_last', data=df_run, kind='reg', height=6,
-                      fit_reg=correlation_present2,
+                      fit_reg=False,
                       scatter_kws={'alpha': 0.1}, line_kws={"color": "red"})
     g2.fig.suptitle('Delay at last stop as a function total run distance')
     g2.set_axis_labels('Distance (km)', 'Delay (min)', fontsize=12)
@@ -307,17 +303,6 @@ def plot_track_changes(df):
     g = sb.boxplot(x="track_change_formatted", y="delay", data=df, showfliers=False, notch=True)
     g.set(ylabel='Delay (min)', xlabel='')
     g.set_xticklabels(['No track change', 'Track change'])
-
-    
-def _is_correlation_present(x, y, min_pearson_coef=0.3, verbose=0):
-    correlation_present = True
-    pearson_coef, p_value = pearsonr(x, y)
-    
-    if p_value >= 0.05 or abs(pearson_coef) < min_pearson_coef:
-        correlation_present = False
-    if verbose > 0:
-        print(f'pearson_coef: {pearson_coef}, p_value: {p_value} ==> correlation_present: {correlation_present}')
-    return correlation_present
     
 
 def plot_track_change_frequency_with_delays(df_track_change_frequency, df_otp):
@@ -336,10 +321,8 @@ def plot_track_change_frequency_with_delays(df_track_change_frequency, df_otp):
         df_otp.groupby(['next_station', 'date']).delay.mean().reset_index(name='delay'),
         on=['next_station', 'date'])
 
-    correlation_present = _is_correlation_present(track_change_delay['track_change_frequency'],
-                                                  track_change_delay['delay'])
     g = sb.jointplot(x='track_change_frequency', y='delay', data=track_change_delay, height=6,
-                      kind='reg', fit_reg=correlation_present,
+                      kind='reg', fit_reg=False,
                      scatter_kws={'alpha': 0.1}, line_kws={"color": "red"})
     g.fig.suptitle('Track change frequency as a function of the mean delay')
     g.set_axis_labels('Track change frequency', 'Mean delay (min)', fontsize=12)
