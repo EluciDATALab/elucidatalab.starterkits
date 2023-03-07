@@ -18,6 +18,13 @@ These passports in itself already provide you with a lot of valuable knowledge o
 
 In addition, each Starter Kit is accompanied by complementary video tutorials to guide you through the different steps AI-based methodology for several industrial use cases, complemented with autodidactic video tutorials. You can access these on our webpage: https://elucidatalab.github.io
 
+Currently, the following Starter Kits are available:
+- [SK_1_2_1: Remaining Useful Life Prediction](notebooks/SK_1_2_1_Remaining_Useful_Life_Prediction)
+- SK_1_3: Resource Demand Forecasting
+- SK_3_1: Advanced Visualisation
+- SK_3_2: Data Exploration
+- SK_3_4: Time Series Preprocessing
+
 ## Running the Starter Kits
 Each Starter Kit has its own folder in the notebooks/ directory. In it, there are four files:
 - a jupyter file with the notebook (*.ipynb)
@@ -50,4 +57,3 @@ elucidatalab@sirris.be
 
 © Sirris Gebruikersovereenkomst Privacy policy
 EluciDATA Lab -The Data and AI Competence Lab of Sirris
-
