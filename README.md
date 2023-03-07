@@ -20,10 +20,10 @@ In addition, each Starter Kit is accompanied by complementary video tutorials to
 
 Currently, the following Starter Kits are available:
 - [SK_1_2_1: Remaining Useful Life Prediction](notebooks/SK_1_2_1_Remaining_Useful_Life_Prediction)
-- SK_1_3: Resource Demand Forecasting
-- SK_3_1: Advanced Visualisation
-- SK_3_2: Data Exploration
-- SK_3_4: Time Series Preprocessing
+- [SK_1_3: Resource Demand Forecasting](notebooks/SK_1_3_Resource_Demand_Forecasting)
+- [SK_3_1: Advanced Visualisation](notebooks/SK_3_1_Advanced_Visualisation)
+- [SK_3_2: Data Exploration](notebooks/SK_3_2_Data_Exploration)
+- [SK_3_4: Time Series Preprocessing](notebooks/SK_3_4_Time_Series_Preprocessing)
 
 ## Running the Starter Kits
 Each Starter Kit has its own folder in the notebooks/ directory. In it, there are four files:
