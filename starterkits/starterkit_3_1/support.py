@@ -4,11 +4,11 @@
 import os
 import pandas as pd
 
-from starterkits import pipeline, DATA_PATH
+from starterkits import pipeline
 import zipfile
 
 
-def get_data(force=False):
+def get_data(DATA_PATH, force=False):
     """Extract dataset from raw data file in server and return subset dataset.
 
     This dataset will be saved locally.
