@@ -86,6 +86,7 @@ def plot_activity_nodes(data):
         df0 = normalize_and_resample(df, resample, normalize, reordered_columns)
         series = [df0[col] for col in reordered_columns]
         fig = vp.plot_multiple_time_series(series, show_time_frame=False, show_time_slider=False)
+        plt.close()
         fig.show()
 
     controller_normalize = vpwt.get_controller({'widget': 'Dropdown',
@@ -258,7 +259,8 @@ def plot_pca_per_day(df):
 
         fig['layout']['yaxis'].update(range=[pca_df['comp2'].min() - 10, pca_df['comp2'].max() + 10])
 
-        return fig
+        plt.close()
+        fig.show()
 
     options = [(node, node) for node in reordered_nodes]
     controller_nodes = vpwt.get_controller({'widget': 'Dropdown',
