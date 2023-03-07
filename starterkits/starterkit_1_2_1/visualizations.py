@@ -8,7 +8,7 @@ from ipywidgets import interact
 from IPython.utils import io
 
 from starterkits.visualization import vis_plotly_widgets as vpw
-from support import LstmApp
+from starterkits.starterkit_1_2_1.support import LstmApp
 
 import cufflinks as cf
 cf.go_offline(connected=True)

@@ -14,7 +14,7 @@ import os
 import tempfile
 import zipfile
 
-from starterkits import pipeline, DATA_PATH
+from starterkits import pipeline
 
 from sklearn import preprocessing
 from sklearn.metrics import confusion_matrix, recall_score, precision_score, f1_score
@@ -31,7 +31,7 @@ import pickle
 
 
 
-def get_data(force=False):
+def get_data(DATA_PATH, force=False):
     """Extract dataset from raw data file in server and return subset dataset.
 
     This dataset will be saved locally.
@@ -62,7 +62,7 @@ def get_data(force=False):
     return train_df, test_df, truth_df
 
 
-def load_data(force=False):
+def load_data(DATA_PATH, force=False):
     """Reads in data and does some preprocessing. The function also creates daily and turbine-specific datasets
 
     dataset can be downloaded from
@@ -81,7 +81,7 @@ def load_data(force=False):
         df = df.sort_values(['id','cycle'])
         return df
 
-    train_df, test_df, truth_df = get_data(force=force)
+    train_df, test_df, truth_df = get_data(DATA_PATH, force=force)
     
     train_df = preprocess(train_df)
     test_df = preprocess(test_df)
