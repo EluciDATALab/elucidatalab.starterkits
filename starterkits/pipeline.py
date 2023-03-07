@@ -32,7 +32,7 @@ class File(object):
         local_folder = self.local_path.parent
         if not local_folder.exists():
             logger.info("Creating directory " + str(local_folder))
-            local_folder.mkdir()
+            local_folder.mkdir(parents=True)
 
     def _generate_file(self):
         self.clean()
@@ -81,7 +81,7 @@ def download_from_url(url, fname, force=False):
         # 
         if fname.parent.exists() is False:
             print(f'{fname.parent} directory does not exist and will be created')
-            fname.parent.mkdir()
+            fname.parent.mkdir(parents=True)
         resp = requests.get(url, stream=True)
         total = int(resp.headers.get('content-length', 0))
         # open(fname, 'wb').close()
