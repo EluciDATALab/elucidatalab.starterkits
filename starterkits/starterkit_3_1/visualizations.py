@@ -104,7 +104,7 @@ def plot_activity_nodes(data):
                                                  'value': False,
                                                  'description': 'Resampling rate'})
 
-    interact(make_plot, resample=controller_resampling, normalize=controller_normalize)
+    return make_plot, controller_resampling, controller_normalize
 
 
 def plot_calendar_heatmap(data):
