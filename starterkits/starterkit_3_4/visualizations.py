@@ -144,7 +144,7 @@ def plot_resampling(df, col_labels):
                               style={'description_width': 'initial'})
 
     # DEFINE PLOTTING FUNCTION
-    def resample_plots(u, c, a):
+    def resample_plots(df, u, c, a):
         # check if any resampling is needed (cycles > 0)
         if c > 0:
             freq = '%d%s' % (c, u)
