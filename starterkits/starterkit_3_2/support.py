@@ -23,6 +23,7 @@ def extract_destination_station_frequency_per_gender(df_trips):
     nof_trips_men = len(df_trips[df_trips['gender'] == 'Male'])
 
     stations_women = (df_trips[df_trips['gender'] == 'Female']
+        .reset_index()
         .groupby(['gender', 'to_station_name'])
         .agg({'bikeid': 'count',
               'to_station_lat': 'first',
@@ -31,6 +32,7 @@ def extract_destination_station_frequency_per_gender(df_trips):
     stations_women['frequency'] = stations_women['frequency'] / nof_trips_women
 
     stations_men = (df_trips[df_trips['gender'] == 'Male']
+        .reset_index()
         .groupby(['gender', 'to_station_name'])
         .agg({'bikeid': 'count'})
         .rename(columns={'bikeid': 'frequency'}))
@@ -82,7 +84,7 @@ def get_trips(DATA_PATH, force=False):
     df= read_data('2015_trip_data', DATA_PATH, force=force)
     df[['starttime','stoptime']] = df [['starttime','stoptime']].apply(pd.to_datetime)
 
-    return df 
+    return df.set_index(['bikeid', 'starttime'])
 
 def get_stations(DATA_PATH, force=False):
     """
@@ -95,7 +97,7 @@ def get_stations(DATA_PATH, force=False):
     df= read_data('2015_station_dataV2', DATA_PATH, force=force)
     df = preprocess_station_data(df=df)
 
-    return df 
+    return df
 
 def get_merged_without_elevation(DATA_PATH, force=False):
     """
@@ -119,17 +121,18 @@ def get_merged_without_elevation(DATA_PATH, force=False):
 
     return df_trips
 
-def get_merged_data_with_elevation(DATA_PATH, force=False):
+def get_merged_data_with_elevation(df_trips, df_stations):
     """
     Function to extract the trips and station data merged (with elevation)
 
-    :param force: to force the reload of the data from artemis
+    :param df_trips: dataframe. Dataset of bike trips
+    :param df_stations: dataframe. Dataset of bike stations
 
     :returns: trips and station merged data with elevation
     """
-    df_trips = get_trips(DATA_PATH, force=force)
-    df_stations = get_stations(DATA_PATH, force=force)
     df_trips = (df_trips
+        .reset_index()
+        .drop(columns=['terminal', 'from_station_lat', 'from_station_lon', 'elevation'], errors='ignore')
         # from
         .merge(df_stations[['terminal', 'lat', 'lon', 'elevation']], left_on=['from_station_id'], right_on=['terminal'])
         .drop(['terminal'], axis=1)
@@ -137,7 +140,8 @@ def get_merged_data_with_elevation(DATA_PATH, force=False):
         # to
         .merge(df_stations[['terminal', 'lat', 'lon', 'elevation']], left_on=['to_station_id'], right_on=['terminal'])
         .drop(['terminal'], axis=1)
-        .rename(columns={'lat': 'to_station_lat', 'lon': 'to_station_lon', 'elevation': 'to_station_elevation'}))
+        .rename(columns={'lat': 'to_station_lat', 'lon': 'to_station_lon', 'elevation': 'to_station_elevation'})
+        .set_index(['bikeid', 'starttime']))
 
     return df_trips
 
@@ -150,7 +154,7 @@ def extract_csv_file(DATA_PATH, zip_fname):
 
     :returns: return name of the file
     """
-    
+
     archive = zipfile.ZipFile(zip_fname)
     for file in archive.namelist():
         archive.extract(file, str(DATA_PATH) + '/SK_3_2/')
@@ -167,6 +171,7 @@ def get_data(DATA_PATH, force=False):
                                 dataset = 'SK-3-2-Pronto.zip',
                                 fname = str(DATA_PATH / 'SK_3_2' / 'SK-3-2-Pronto.zip'),
                                 force=force)
+    
     extract_csv_file(DATA_PATH, zip_fname=zip_path)
 
 
@@ -207,16 +212,12 @@ def preprocess_trips_dataset(df_trips):
     df_trips['tripdurationMinutes'] = df_trips['tripduration'] / 60
 
     df_trips['birthyear'] = df_trips['birthyear'].astype(int, errors='ignore')
-    df_trips['age'] = (df_trips.starttime.dt.year - df_trips.birthyear).astype(int, errors='ignore')
-    df_trips['month'] = pd.Categorical(df_trips.starttime.apply(lambda x: dt.datetime.strftime(x, '%b')),
-                                       ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-                                        'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'])
-    df_trips['day'] = pd.Categorical(df_trips.starttime.apply(lambda x: dt.datetime.strftime(x, '%a')),
-                                     ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'])
-    df_trips['hour'] = df_trips.starttime.dt.hour
-
-    df_trips.set_index(df_trips['starttime'], inplace=True)
-    df_trips.index.name = None
+    df_trips['age'] = ((df_trips.index.get_level_values('starttime').year
+                        - df_trips.birthyear)
+                      .astype(int, errors='ignore'))
+    df_trips['month'] = df_trips.index.get_level_values('starttime').strftime('%b')
+    df_trips['day'] = df_trips.index.get_level_values('starttime').strftime('%a')
+    df_trips['hour'] = df_trips.index.get_level_values('starttime').hour
     
     return df_trips
 
@@ -289,13 +290,12 @@ def get_data_stats(df):
     :param df: A pandas dataframe with trips data
     """
 
-    df = df.copy()
-
-    nof_trips = df.index.size
-    start_date = df.starttime.min().date()
+    nof_trips = df.groupby('bikeid').trip_id.nunique().sum()
+    nof_bikes = df.reset_index().bikeid.nunique()
+    start_date = df.index.get_level_values('starttime').min().date()
     end_date = df.stoptime.max().date()
     print(f"Dataset contains {nof_trips} trips from {start_date} to {end_date}.")
-    print(f"Number of bikes registered in the Pronto system: {df.bikeid.nunique()}")
+    print(f"Number of bikes registered in the Pronto system: {nof_bikes}")
     print(f"Number of stations: {df.from_station_id.nunique()}")
 
 def get_trips_from_statios(df_trips):
@@ -425,6 +425,7 @@ def get_trips_dow(df_trips):
     :returns: A pandas dataframe with trips data and days of the week
     """
     df_trips_dow = (df_trips
+        .reset_index()
         .groupby('day')
         .agg({'tripdurationMinutes': 'median', 'starttime': 'count'})
         .reset_index()
@@ -441,6 +442,7 @@ def get_trips_moy(df_trips):
     :returns: A pandas dataframe with trips data and month of the year
     """
     df_trips_moy = (df_trips
+        .reset_index()
         .groupby('month')
         .agg({'tripdurationMinutes': 'median', 'starttime': 'count'})
         .reset_index()

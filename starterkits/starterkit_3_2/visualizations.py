@@ -223,7 +223,7 @@ def plot_trip_duration_age_joint_distribution(df):
     df_trips_complete = df.dropna()
     pearson_corr = np.corrcoef(df_trips_complete.age, df_trips_complete.tripdurationMinutes)[0, 1]
 
-    g = sns.jointplot(x='age', y='tripdurationMinutes', data=df.reset_index().drop_duplicates(subset=['index']),
+    g = sns.jointplot(x='age', y='tripdurationMinutes', data=df_trips_complete,
                       kind='reg', height=6, scatter_kws={'alpha': 0.1})
     g.fig.suptitle('Joint Distribution of Trip Duration and Age')
     print(f"Trip duration (in minutes) vs age: Pearson correlation: {pearson_corr:0.2f}")
