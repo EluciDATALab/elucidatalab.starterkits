@@ -7,7 +7,6 @@ import pandas as pd
 import warnings
 import matplotlib.pyplot as plt
 import seaborn as sb
-from IPython.display import display
 
 from scipy.signal import savgol_filter
 from scipy.ndimage import gaussian_filter1d
@@ -108,8 +107,7 @@ def table_data_overview(df):
         
         fig = go.Figure(go.Table(header={'values': list(table_concat.columns)},
                                  cells={'values': [table_concat[c] for c in table_concat.columns]}))
-        plt.close()
-        fig.show()
+        fig.show(renderer="colab")
         # vt.plot_table(table_concat, page_size=20)
 
     return subset_table, col, slider
@@ -144,7 +142,7 @@ def plot_resampling(df, col_labels):
                               style={'description_width': 'initial'})
 
     # DEFINE PLOTTING FUNCTION
-    def resample_plots(df, u, c, a):
+    def resample_plots(u, c, a):
         # check if any resampling is needed (cycles > 0)
         if c > 0:
             freq = '%d%s' % (c, u)
@@ -159,8 +157,7 @@ def plot_resampling(df, col_labels):
             show_legend=False)
             
         vpt.update_labels_subplots(fig, {'yaxis_title': col_labels}, columns)
-        plt.close()
-        display(fig)
+        fig.show(renderer="colab")
 
     return resample_plots, unit, slider, aggfun
 
@@ -280,8 +277,7 @@ def plot_stl(df):
                                      show_legend=False,
                                      kwargs_subplots={'rows': 4, 'cols': 1})
         fig.update_layout(height=500)
-        plt.close()
-        display(fig)
+        fig.show()
 
     return stl_decompose, choice, selection_range_slider, col_selector
 
@@ -422,8 +418,7 @@ def plot_outlier_events(df, outlier_events):
         fig.add_trace(fig1.data[0], row=1, col=2)
         fig.add_trace(fig1b.data[0], row=1, col=2)
         fig.update_layout(showlegend=False)
-        plt.close()
-        display(fig)
+        fig.show()
 
     return visualize_outlier_event, e_id, flank
     
@@ -538,8 +533,7 @@ def plot_fleet_outliers(df):
                       x0=rnd_evt.Start, x1=rnd_evt.End, 
                       y0=ex.power.min(), y1=ex.power.max(),
                       sh_type='rect', sh_specs={'alpha': 0.2})
-        plt.close()
-        display(fig)
+        fig.show()
 
     return plot_outlier, events, slider
 
@@ -652,8 +646,7 @@ def plot_imputation(df, missing_events):
             vpt.add_shape(fig, x0=x0, 
                           y0=df0.wind_speed.min(), y1=df0.wind_speed.max(),
                           sh_specs={'alpha': 0.5}) 
-        plt.close()
-        display(fig)
+        fig.show()
 
     return imputate_missing, events, slider, turbine_selector
 
@@ -732,8 +725,7 @@ def plot_pattern_imputation(df):
             vpt.add_shape(fig, x0=x0, 
                           y0=df0_sub[v].min(), y1=df0_sub[v].max(),
                           sh_specs={'alpha': 0.5}) 
-        plt.close()
-        display(fig)
+        fig.show()
 
     return _plot_pattern_imputation, features, slider, slider_evt_st
 

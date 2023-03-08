@@ -7,8 +7,6 @@ import pandas as pd
 import numpy as np
 from copy import deepcopy
 import ipywidgets as widgets
-import matplotlib.pyplot as plt
-from IPython.display import display
 
 from starterkits.visualization import vis_tools
 from starterkits.visualization import vis_plotly as vp
@@ -98,8 +96,7 @@ def timeseries_with_variable_selector(df,
             vpt.update_labels_subplots(fig, kwargs_layout, cols)
 
         vpwt.update_layout(fig, kwargs_ts, kwargs_layout)
-        plt.close()
-        display(fig)
+        fig.show(renderer="colab")
 
     return plot_timeseries, var_selector, date_range_slider
 
@@ -222,8 +219,7 @@ def plot_transform_time_series(df, methods, controllers=None, columns=None,
             add_shape(fig, df_out, plt_cols)
 
         vpwt.update_layout(fig, ts_kwargs, layout_kwargs)
-        plt.close()
-        display(fig)
+        fig.show(renderer="colab")
 
     def transform_plot(method, **args):
         df_out, plotting_columns = transform_df(df, method, **args)
@@ -303,7 +299,7 @@ def plot_distribution(df,
                                same_plot=kwargs_dist.get('same_plot', True),
                                hist_specs=kwargs_plt, trace_specs=trace_specs)
 
-        fig.show()
+        fig.show(renderer="colab")
 
     return plot_dist, columns, plot_type
 
@@ -402,7 +398,7 @@ def plot_scatterplot(df,
                 kwargs_layout0[c1] = kwargs_layout0[c1] if same_plot \
                     else kwargs_layout0[c1] * fig_layout[k1] * 0.75
         vpwt.update_layout(fig, kwargs_sc, kwargs_layout0)
-        fig.show()
+        fig.show(renderer="colab")
 
     return plot_scatter, col_controller, limit_samples, same_plot
 
@@ -515,5 +511,5 @@ def timeseries_with_variable_filter(df,
                          )
                 )
         vpwt.update_layout(fig, kwargs_ts, kwargs_layout)
-        fig.show()
+        fig.show(renderer="colab")
     return plot_timeseries, var_selector, date_range_slider, var_filter
