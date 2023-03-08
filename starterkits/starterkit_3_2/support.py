@@ -4,7 +4,7 @@
 import datetime as dt
 import pandas as pd
 import numpy as np
-from starterkits import pipeline, DATA_PATH
+from starterkits import pipeline
 import zipfile
 
 def extract_destination_station_frequency_per_gender(df_trips):
@@ -43,7 +43,7 @@ def extract_destination_station_frequency_per_gender(df_trips):
 
     return ans
 
-def read_data(name, force=False):
+def read_data(name, DATA_PATH, force=False):
     """
     Import CSV files
 
@@ -53,7 +53,7 @@ def read_data(name, force=False):
     :returns: read pronto csv files
     """
 
-    get_data(force=force)
+    get_data(DATA_PATH, force=force)
     data = pd.read_csv(str(DATA_PATH / 'SK_3_2'  / f'{name}.csv'))
     
     return data
@@ -71,7 +71,7 @@ def preprocess_station_data(df):
 
     return df
 
-def get_trips(force=False):
+def get_trips(DATA_PATH, force=False):
     """
     Get trip data
 
@@ -79,12 +79,12 @@ def get_trips(force=False):
 
     :returns: trip data
     """
-    df= read_data(name='2015_trip_data', force=force)
+    df= read_data('2015_trip_data', DATA_PATH, force=force)
     df[['starttime','stoptime']] = df [['starttime','stoptime']].apply(pd.to_datetime)
 
     return df 
 
-def get_stations(force=False):
+def get_stations(DATA_PATH, force=False):
     """
     Get station data
 
@@ -92,12 +92,12 @@ def get_stations(force=False):
 
     :returns: station data
     """
-    df= read_data('2015_station_dataV2', force=force)
+    df= read_data('2015_station_dataV2', DATA_PATH, force=force)
     df = preprocess_station_data(df=df)
 
     return df 
 
-def get_merged_without_elevation(force=False):
+def get_merged_without_elevation(DATA_PATH, force=False):
     """
     Function to extract the trips and station data merged (without elevation)
 
@@ -105,8 +105,8 @@ def get_merged_without_elevation(force=False):
 
     :returns: trips and station merged data without elevation
     """
-    df_trips = get_trips(force=force)
-    df_stations = get_stations(force=force)
+    df_trips = get_trips(DATA_PATH, force=force)
+    df_stations = get_stations(DATA_PATH, force=force)
     df_trips = (df_trips
                 # from
                 .merge(df_stations[['terminal', 'lat', 'lon']], left_on=['from_station_id'], right_on=['terminal'])
@@ -119,7 +119,7 @@ def get_merged_without_elevation(force=False):
 
     return df_trips
 
-def get_merged_data_with_elevation(force=False):
+def get_merged_data_with_elevation(DATA_PATH, force=False):
     """
     Function to extract the trips and station data merged (with elevation)
 
@@ -127,8 +127,8 @@ def get_merged_data_with_elevation(force=False):
 
     :returns: trips and station merged data with elevation
     """
-    df_trips = get_trips(force=force)
-    df_stations = get_stations(force=force)
+    df_trips = get_trips(DATA_PATH, force=force)
+    df_stations = get_stations(DATA_PATH, force=force)
     df_trips = (df_trips
         # from
         .merge(df_stations[['terminal', 'lat', 'lon', 'elevation']], left_on=['from_station_id'], right_on=['terminal'])
@@ -141,7 +141,7 @@ def get_merged_data_with_elevation(force=False):
 
     return df_trips
 
-def extract_csv_file(zip_fname):
+def extract_csv_file(DATA_PATH, zip_fname):
     """
     Extract CSV from zip file
 
@@ -156,7 +156,7 @@ def extract_csv_file(zip_fname):
         archive.extract(file, str(DATA_PATH) + '/SK_3_2/')
 
 
-def get_data(force=False):
+def get_data(DATA_PATH, force=False):
     """
     Extract data zip file from server and unzip it. This dataset will be saved locally.
 
@@ -167,7 +167,7 @@ def get_data(force=False):
                                 dataset = 'SK-3-2-Pronto.zip',
                                 fname = str(DATA_PATH / 'SK_3_2' / 'SK-3-2-Pronto.zip'),
                                 force=force)
-    extract_csv_file(zip_fname=zip_path)
+    extract_csv_file(DATA_PATH, zip_fname=zip_path)
 
 
 def get_weekdays():

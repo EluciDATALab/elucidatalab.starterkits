@@ -3,7 +3,7 @@
 
 import seaborn as sns
 import matplotlib.pyplot as plt
-from support import *
+from starterkits.starterkit_3_2.support import *
 import folium
 from matplotlib import rcParams
 
@@ -110,7 +110,7 @@ def plot_user_age(df):
     :param df: A pandas dataframe with trip data
     """
     plt.figure(figsize=(15, 5))
-    g = sns.distplot(df.age.dropna(), kde=False, bins=np.arange(df.age.max()))
+    g = sns.histplot(df.age.dropna(),bins=np.arange(df.age.max()))
 
     age_mean = round(df.age.mean())
     age_mode = round(df.age.mode().values[0], 0)
@@ -129,7 +129,7 @@ def plot_user_birth_year(df):
     :param df: A pandas dataframe with trip data
     """
     plt.figure(figsize=(15, 5))
-    g = sns.distplot(df.birthyear.dropna(), kde=False);
+    g = sns.histplot(df.birthyear.dropna(), bins=50);
     g.axvline(1987, color='green', linestyle='--')
     g.axvline(1985, color='red', linestyle='--')
     g.set_title("Distribution of Users' Ages\n"
@@ -251,7 +251,7 @@ def plot_age_distribution_per_gender(df):
     bins = list(range(0, 81))
     g = sns.FacetGrid(data=df_tripAge, hue="gender", height=5, aspect=4, legend_out=False,
                       hue_order=["Male", "Female", "Other"])
-    g = g.map(sns.distplot, "age", bins=bins, hist_kws=dict(alpha=1), kde=False).add_legend()
+    g = g.map(sns.histplot, "age", bins=bins, alpha=1).add_legend()
     g.axes[0, 0].set(ylabel='Count', xlim=[15, 80])
     g.fig.suptitle('Age Distribution Per Gender');
 
