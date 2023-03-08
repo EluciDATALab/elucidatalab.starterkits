@@ -10,10 +10,10 @@ import ipywidgets as widgets
 import matplotlib.pyplot as plt
 from IPython.display import display
 
-from elucidata.tools.visualization import vis_tools
-from elucidata.tools.visualization import vis_plotly as vp
-from elucidata.tools.visualization import vis_plotly_tools as vpt
-from elucidata.tools.visualization import vis_plotly_widgets_tools as vpwt
+from starterkits.visualization import vis_tools
+from starterkits.visualization import vis_plotly as vp
+from starterkits.visualization import vis_plotly_tools as vpt
+from starterkits.visualization import vis_plotly_widgets_tools as vpwt
 
 import cufflinks as cf
 cf.go_offline(connected=True)
