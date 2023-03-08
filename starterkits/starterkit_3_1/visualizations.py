@@ -271,7 +271,7 @@ def plot_pca_per_day(df):
     # define selector
     controller_cmap = widgets.Dropdown(options=cmaps, value=default, description='Colormap')
 
-    interact(make_plot, cmap=controller_cmap, node=controller_nodes)
+    return make_plot, controller_cmap, controller_nodes
 
 
 def plot_pca_clusters(df):
