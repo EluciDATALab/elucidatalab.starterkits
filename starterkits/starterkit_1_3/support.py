@@ -3,10 +3,8 @@
 
 import pandas as pd
 import numpy as np
-import matplotlib.pyplot as plt
-import holidays
 
-from datetime import datetime, timedelta
+from datetime import datetime
 from IPython.display import Markdown, display
 import zipfile
 import os
@@ -14,25 +12,15 @@ import os
 import multiprocessing
 from joblib import Parallel, delayed
 
-from starterkits import pipeline, DATA_PATH
+from starterkits import pipeline
 
 from sklearn.metrics import mean_absolute_error
-from sklearn.preprocessing import MinMaxScaler
-
-from starterkits.visualization import vis_plotly as vp
-from starterkits.visualization import vis_plotly_tools as vpt
-from starterkits.visualization import vis_plotly_widgets as vpw
-
-from ipywidgets import interact, interact_manual, interactive, fixed
-import plotly.graph_objects as go
-import plotly.express as px
-import seaborn as sns
 
 target = 'consumption'
 features = ['Pastday', 'Pastweek', 'Hour', 'Weekday', 'Month', 'Holiday', 'Temperature']
 
 
-def read_consumption_data(force=False):
+def read_consumption_data(DATA_PATH, force=False):
     """Extract and return dataset from raw data file in server.
 
     This dataset will be saved locally.
@@ -82,7 +70,7 @@ def read_climate_data_(fname):
     return fname
 
 
-def read_climate_data(force=False):
+def read_climate_data(DATA_PATH, force=False):
     """ Read climate data.
 
     Source: 'https://www.ncei.noaa.gov/data/global-hourly/access/{YYYY}/07156099999.csv', where {YYYY} = 2007-2011

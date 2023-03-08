@@ -1,4 +1,4 @@
-starterkits @ git+https://github.com/EluciDATALab/elucidatalab.starterkits.git@d825c6e21ea912c2609ad449f74fda76cdfaf734
+starterkits @ git+https://github.com/EluciDATALab/elucidatalab.starterkits.git
 dash_bootstrap_components==0.13.1
 jupyter-dash==0.4.2
 tensorflow==2.11.0
