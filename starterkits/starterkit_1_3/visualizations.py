@@ -3,14 +3,20 @@
 
 import pandas as pd
 import numpy as np
+import holidays
+
 from jupyter_dash import JupyterDash
 from dash.dependencies import Input, Output, State
 import dash_core_components as dcc
 import dash_html_components as html
 import dash_bootstrap_components as dbc
 
-from starterkits.visualization import vis_plotly as vp
-from starterkits.visualization import vis_plotly_widgets_tools as vpwt
+from starterkits.visualization import vis_plotly as vp, vis_plotly_tools as vpt
+from starterkits.visualization import vis_plotly_widgets_tools as vpwt, vis_plotly_widgets as vpw
+
+import matplotlib.pyplot as plt
+import plotly.express as px
+import seaborn as sns
 
 import plotly.graph_objects as go
 from sklearn.preprocessing import MinMaxScaler
@@ -19,6 +25,8 @@ from sklearn.ensemble import RandomForestRegressor
 from sklearn.metrics import mean_absolute_error
 from datetime import timedelta
 from joblib import Parallel, delayed
+
+from ipywidgets import interact, fixed
 
 from starterkits.starterkit_1_3.support import * # get_months
 
@@ -39,7 +47,7 @@ def plot_real_estimated_power(df_real_values,array_predicted_values, ax=None):
     df_copy.loc[:,'Predicted'].plot(figsize=(16,5), legend=True, ax=ax)
     ax.legend(['Observed', 'Predicted'])
     ax.set_title('Evolution global active power')
-    ax.set_ylabel('Active Power [Wh]');
+    ax.set_ylabel('Active Power [Wh]')
     return ax
 
 
