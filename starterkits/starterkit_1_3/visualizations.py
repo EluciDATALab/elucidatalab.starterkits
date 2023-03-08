@@ -124,7 +124,7 @@ def plot_weekly_data(df):
               title='Evolution global active power',
               font={'size': 18},
               showlegend=True)
-    fig.show()
+    fig.show(renderer="colab")
 
 
 def plot_correlation(df):
@@ -138,7 +138,7 @@ def plot_correlation(df):
         corr = resampled_df.corr()
         cmap = sns.diverging_palette(220, 10, as_cmap=True)
         fig = px.imshow(corr, color_continuous_scale='RdBu', zmin=-1, zmax=1)
-        fig.show()
+        fig.show(renderer="colab")
 
     controller= vpwt.get_controller({'widget': 'Dropdown',
                                      'options': [('No resampling', None),
@@ -185,7 +185,7 @@ def plot_temperature_power_one_year_old(new_data):
         plot_df[['Global_active_power', 'temperature']])
     fig = vp.plot_multiple_time_series([plot_df['Global_active_power'], plot_df['temperature']],
                                        show_time_slider=False, show_time_frame=False)  # , same_plot=False)
-    fig.show()
+    fig.show(renderer="colab")
 
 
 def plot_temperature_power_one_year(new_data, show_time_frame=False):
@@ -219,7 +219,7 @@ def plot_temperature_power_one_year(new_data, show_time_frame=False):
         series_to_plot = [df[col] for col in both_columns]
         fig = vp.plot_multiple_time_series(series_to_plot,
                                            show_time_slider=False, show_time_frame=False)  # , same_plot=False)
-        fig.show()
+        fig.show(renderer="colab")
 
     # sampled_data = data.loc['2008-04-01 00:00:00': '2008-04-30 23:59:59'][['Global_active_power']]#.sample(100000).sort_index()
 
@@ -325,7 +325,7 @@ def plot_consumption_with_holidays_weekends_old2(new_data):
         fig['layout']['xaxis'].update(range=[0, 28])
         fig['layout']['yaxis'].update(range=[0, 20000])
 
-        fig.show()
+        fig.show(renderer="colab")
 
     checked = {2007: True, 2008: False, 2009: False}
     controllers = {f'plot_{year}': vpwt.get_controller({'widget': 'Checkbox', 'value': checked[year],
@@ -437,7 +437,7 @@ def plot_consumption_with_holidays_weekends(new_data):
         # fig['layout']['xaxis'].update(range=[0, 28])
         fig['layout']['yaxis'].update(range=[0, 20000])
 
-        fig.show()
+        fig.show(renderer="colab")
 
     checked = {2007: True, 2008: False, 2009: False}
     controller_year = vpwt.get_controller({'widget': 'RadioButtons', 'options': [2007, 2008, 2009],
@@ -502,7 +502,7 @@ def plot_yearly_data(new_data):
                           font={'size': 18},  # 'color': "#7f7f7f"},
                           showlegend=True)
 
-        fig.show()
+        fig.show(renderer="colab")
 
     # checked = {2007: True, 2008: False, 2009: False}
     # controllers_year_selection = {f'plot_{year}': vpwt.get_controller({'widget': 'Checkbox', 'value': checked[year],
@@ -535,7 +535,7 @@ def plot_auto_correlation(data):
                       font={'size': 18},  # 'color': "#7f7f7f"},
                       showlegend=True)
     fig['layout']['yaxis'].update(range=[0.25, 0.5])
-    fig.show()
+    fig.show(renderer="colab")
 
 
 METHODS = ['baseline', 'SVM', 'RandomForest']
