@@ -1,4 +1,4 @@
-starterkits @ git+https://github.com/EluciDATALab/elucidatalab.starterkits.git --force-reinstall
+starterkits @ git+https://github.com/EluciDATALab/elucidatalab.starterkits.git
 dash_bootstrap_components==0.13.1
 jupyter-dash==0.4.2
 
