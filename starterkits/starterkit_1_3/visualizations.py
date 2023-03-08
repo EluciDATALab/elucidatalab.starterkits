@@ -10,7 +10,6 @@ import dash_html_components as html
 import dash_bootstrap_components as dbc
 
 from starterkits.visualization import vis_plotly as vp
-#from elucidata.tools.visualization import vis_plotly as vp
 from starterkits.visualization import vis_plotly_widgets_tools as vpwt
 
 import plotly.graph_objects as go
@@ -18,11 +17,10 @@ from sklearn.preprocessing import MinMaxScaler
 from sklearn.svm import SVR
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.metrics import mean_absolute_error
-from datetime import datetime,timedelta
-import multiprocessing
+from datetime import timedelta
 from joblib import Parallel, delayed
 
-from support import * # get_months
+from starterkits.starterkit_1_3.support import * # get_months
 
 
 def plot_real_estimated_power(df_real_values,array_predicted_values, ax=None):
