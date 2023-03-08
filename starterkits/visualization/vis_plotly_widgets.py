@@ -7,11 +7,13 @@ import pandas as pd
 import numpy as np
 from copy import deepcopy
 import ipywidgets as widgets
+import matplotlib.pyplot as plt
+from IPython.display import display
 
-from starterkits.visualization import vis_tools
-from starterkits.visualization import vis_plotly as vp
-from starterkits.visualization import vis_plotly_tools as vpt
-from starterkits.visualization import vis_plotly_widgets_tools as vpwt
+from elucidata.tools.visualization import vis_tools
+from elucidata.tools.visualization import vis_plotly as vp
+from elucidata.tools.visualization import vis_plotly_tools as vpt
+from elucidata.tools.visualization import vis_plotly_widgets_tools as vpwt
 
 import cufflinks as cf
 cf.go_offline(connected=True)
@@ -96,7 +98,8 @@ def timeseries_with_variable_selector(df,
             vpt.update_labels_subplots(fig, kwargs_layout, cols)
 
         vpwt.update_layout(fig, kwargs_ts, kwargs_layout)
-        fig.show()
+        plt.close()
+        display(fig)
 
     return plot_timeseries, var_selector, date_range_slider
 
@@ -219,7 +222,8 @@ def plot_transform_time_series(df, methods, controllers=None, columns=None,
             add_shape(fig, df_out, plt_cols)
 
         vpwt.update_layout(fig, ts_kwargs, layout_kwargs)
-        fig.show()
+        plt.close()
+        display(fig)
 
     def transform_plot(method, **args):
         df_out, plotting_columns = transform_df(df, method, **args)

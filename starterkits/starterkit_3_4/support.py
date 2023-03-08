@@ -19,7 +19,7 @@ cf.set_config_file(colorscale='plotly', world_readable=True)
 
 
 
-def get_data(force=False):
+def get_data(DATA_PATH, force=False):
     """Extract dataset from raw data file in server and return subset dataset.
 
     This dataset will be saved locally.
@@ -46,7 +46,7 @@ def get_data(force=False):
     return df
 
 
-def load_data(force=False):
+def load_data(DATA_PATH, force=False):
     """Reads in data and does some preprocessing. The function also creates daily and turbine-specific datasets
 
     dataset can be downloaded from
@@ -58,7 +58,7 @@ def load_data(force=False):
     :returns missing_events_sum. dataframe with summary of missing data events per duration
     """
 
-    ds = get_data(force=force)
+    ds = get_data(DATA_PATH, force=force)
     ds.index = pd.DatetimeIndex(
         pd.to_datetime(ds.Date_time.apply(lambda x: x.split('+')[0])),
         name='datetime')
