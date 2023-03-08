@@ -277,7 +277,7 @@ def plot_stl(df):
                                      show_legend=False,
                                      kwargs_subplots={'rows': 4, 'cols': 1})
         fig.update_layout(height=500)
-        fig.show()
+        fig.show(renderer="colab")
 
     return stl_decompose, choice, selection_range_slider, col_selector
 
@@ -418,7 +418,7 @@ def plot_outlier_events(df, outlier_events):
         fig.add_trace(fig1.data[0], row=1, col=2)
         fig.add_trace(fig1b.data[0], row=1, col=2)
         fig.update_layout(showlegend=False)
-        fig.show()
+        fig.show(renderer="colab")
 
     return visualize_outlier_event, e_id, flank
     
@@ -533,7 +533,7 @@ def plot_fleet_outliers(df):
                       x0=rnd_evt.Start, x1=rnd_evt.End, 
                       y0=ex.power.min(), y1=ex.power.max(),
                       sh_type='rect', sh_specs={'alpha': 0.2})
-        fig.show()
+        fig.show(renderer="colab")
 
     return plot_outlier, events, slider
 
@@ -646,7 +646,7 @@ def plot_imputation(df, missing_events):
             vpt.add_shape(fig, x0=x0, 
                           y0=df0.wind_speed.min(), y1=df0.wind_speed.max(),
                           sh_specs={'alpha': 0.5}) 
-        fig.show()
+        fig.show(renderer="colab")
 
     return imputate_missing, events, slider, turbine_selector
 
@@ -725,7 +725,7 @@ def plot_pattern_imputation(df):
             vpt.add_shape(fig, x0=x0, 
                           y0=df0_sub[v].min(), y1=df0_sub[v].max(),
                           sh_specs={'alpha': 0.5}) 
-        fig.show()
+        fig.show(renderer="colab")
 
     return _plot_pattern_imputation, features, slider, slider_evt_st
 
