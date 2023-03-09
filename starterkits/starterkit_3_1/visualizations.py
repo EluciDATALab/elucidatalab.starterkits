@@ -104,7 +104,7 @@ def plot_activity_nodes(data):
                                                  'value': False,
                                                  'description': 'Resampling rate'})
 
-    return make_plot, controller_resampling, controller_normalize
+    interact(make_plot, resample=controller_resampling, normalize=controller_normalize)
 
 
 def plot_calendar_heatmap(data):
@@ -271,7 +271,7 @@ def plot_pca_per_day(df):
     # define selector
     controller_cmap = widgets.Dropdown(options=cmaps, value=default, description='Colormap')
 
-    return make_plot, controller_cmap, controller_nodes
+    interact(make_plot, cmap=controller_cmap, node=controller_nodes)
 
 
 def plot_pca_clusters(df):
