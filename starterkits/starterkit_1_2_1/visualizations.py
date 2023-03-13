@@ -40,11 +40,9 @@ def start_dashboard(Xtrain, sequence_cols, test_df, mode='inline', PORT=8050, HO
             ts_app.run_server(mode='external', host=HOST, port=PORT)
         print(f'Dash app running on http://{HOST}:{PORT}')
     elif mode == 'inline': 
-        with io.capture_output() as captured:
-            app = LstmApp(Xtrain, sequence_cols, test_df)
-            ts_app = app.get_app()
-            ts_app.run_server(mode='inline')
-        print(f'Dash app running on http://{HOST}:{PORT}')
+        app = LstmApp(Xtrain, sequence_cols, test_df)
+        ts_app = app.get_app()
+        ts_app.run_server(mode='inline')
     else:
         raise ValueError('mode must be external or inline')
 
