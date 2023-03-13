@@ -31,15 +31,23 @@ def interactive_plot(test_df):
     return date_range_slider
     
     
-def start_dashboard(Xtrain, sequence_cols, test_df, PORT=8050, HOST='0.0.0.0'):
-    # HOST = '127.0.0.1' 
-    with io.capture_output() as captured:
-        app = LstmApp(Xtrain, sequence_cols, test_df)
-        ts_app = app.get_app()
-        ts_app.run_server(mode='inline')
+def start_dashboard(Xtrain, sequence_cols, test_df, mode='inline', PORT=8050, HOST='0.0.0.0'):
+    if mode == 'external':
+        # HOST = '127.0.0.1' 
+        with io.capture_output() as captured:
+            app = LstmApp(Xtrain, sequence_cols, test_df)
+            ts_app = app.get_app()
+            ts_app.run_server(mode='external', host=HOST, port=PORT)
+        print(f'Dash app running on http://{HOST}:{PORT}')
+    elif mode == 'internal': 
+        with io.capture_output() as captured:
+            app = LstmApp(Xtrain, sequence_cols, test_df)
+            ts_app = app.get_app()
+            ts_app.run_server(mode='inline')
+        print(f'Dash app running on http://{HOST}:{PORT}')
+    else:
+        raise ValueError('mode must be external or internal')
 
-    
-    print(f'Dash app running on http://{HOST}:{PORT}')
 
 
 def plot_label_frequency(label_array):
