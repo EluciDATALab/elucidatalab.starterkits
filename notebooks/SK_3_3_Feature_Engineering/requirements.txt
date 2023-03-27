@@ -1,0 +1,5 @@
+geopy==2.3.0
+requests==2.28.2
+tqdm==4.65.0
+seaborn==1.12.2
+scipy==1.10.0
