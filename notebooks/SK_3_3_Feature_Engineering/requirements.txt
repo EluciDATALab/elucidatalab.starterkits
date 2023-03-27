@@ -1,6 +1,6 @@
 # starterkits @ git+https://github.com/EluciDATALab/elucidatalab.starterkits.git
 # -e git+https://github.com/EluciDATALab/elucidatalab.starterkits.git @SK_3_3_Feature_Engineering #egg=project_a
-starterkits @ git+https://github.com/EluciDATALab/elucidatalab.starterkits.git#SK_3_3_Feature_Engineering
+starterkits @ git+https://github.com/EluciDATALab/elucidatalab.starterkits.git@SK_3_3_Feature_Engineering
 
 geopy==2.3.0
 requests==2.28.2
