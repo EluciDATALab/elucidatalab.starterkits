@@ -9,27 +9,30 @@ import pandas as pd
 import datetime as dt
 
 from geopy.distance import geodesic
-# from elucidata.resources import pipeline
-from starterkits import pipeline, DATA_PATH
+from starterkits import pipeline
 
 
 warnings.filterwarnings('ignore')
 
 
-def load_otp_data(force=False):
+def load_otp_data(force=False, DATA_PATH='../../data'):
     """Extract OTP dataset from raw data file in server and return subset dataset.
 
-        This dataset will be saved locally. The OTP dataset provides information about trains and
-        the times at which they arrive at the different stations on their lines.
-        returns: Seattle bike data
-        """
+    This dataset will be saved locally. The OTP dataset provides information about trains and
+    the times at which they arrive at the different stations on their lines.
+    
+    :param force: if True, force re-download of data from server
+    :param DATA_PATH: local path to data folder
+
+    :return a pandas dataframe with OTP data
+    """
 
     def extract_csv_file(file_name):
-        target_folder = DATA_PATH / 'SK_3_3'
+        target_folder = DATA_PATH + '/SK_3_3'
         zip_file_name = pipeline.download_from_repo(
             'SK_3_3',
             'otp.csv.zip',
-            str(target_folder / 'otp.csv.zip'),
+            str(target_folder + '/otp.csv.zip'),
             force=force)
 
         with zipfile.ZipFile(zip_file_name, 'r') as zipped_file:
@@ -38,7 +41,7 @@ def load_otp_data(force=False):
         return file_name
 
     f_name = (pipeline.File(extract_csv_file,
-                            str(DATA_PATH / 'SK_3_3' / 'otp.csv'))
+                            str(DATA_PATH + '/SK_3_3/otp.csv'))
               .make(force=force))
 
     df_otp = pd.read_csv(f_name)
@@ -47,39 +50,24 @@ def load_otp_data(force=False):
 
     return df_otp
 
-# def load_otp_data():
-#     """
-#     import OTP dataset that provides information about trains and the times at which
-#     they arrive at the different stations on their lines
-#
-#     :returns OTP dataset
-#     """
-#     file_path = 'data/otp.csv'
-#     _load_data_from_sever_if_file_is_missing(file_path)
-#
-#     df_otp = pd.read_csv(file_path)
-#     df_otp['date'] = df_otp.date.apply(lambda x: dt.datetime.strptime(x, '%Y-%m-%d'))
-#     df_otp['timeStamp'] = df_otp.timeStamp.apply(lambda x: dt.datetime.strptime(x, '%Y-%m-%d %H:%M:%S'))
-#
-#     return df_otp
-#
-#
 
-
-def load_train_view_data(force=False):
+def load_train_view_data(force=False, DATA_PATH='../../data'):
     """Extract train_view dataset from raw data file in server and return subset dataset.
 
-        This dataset will be saved locally. The OTP dataset providestrain tracking information.
+    This dataset will be saved locally. The OTP dataset providestrain tracking information.
 
-        returns: Seattle bike data
-        """
+    :param force: if True, force re-download of data from server
+    :param DATA_PATH: local path to data folder
+
+    :return a pandas dataframe with train view data
+    """
 
     def extract_csv_file(file_name):
-        target_folder = DATA_PATH / 'SK_3_3'
+        target_folder = DATA_PATH + '/SK_3_3'
         zip_file_name = pipeline.download_from_repo(
             'SK_3_3',
             'trainView.csv.zip',
-            str(target_folder / 'trainView.csv.zip'),
+            str(target_folder + '/trainView.csv.zip'),
             force=force)
 
         with zipfile.ZipFile(zip_file_name, 'r') as zipped_file:
@@ -88,7 +76,7 @@ def load_train_view_data(force=False):
         return file_name
 
     f_name = (pipeline.File(extract_csv_file,
-                            str(DATA_PATH / 'SK_3_3' / 'trainView.csv'))
+                            str(DATA_PATH + '/SK_3_3/trainView.csv'))
               .make(force=force))
 
     df_train_view = pd.read_csv(f_name)
@@ -97,51 +85,11 @@ def load_train_view_data(force=False):
     return df_train_view
 
 
-# def load_train_view_data():
-#     """
-#     import train view dataset that provides train tracking information
-#
-#     :returns train view dataset
-#     """
-#     file_path = 'data/trainView.csv'
-#     _load_data_from_sever_if_file_is_missing(file_path)
-#
-#     df_train_view = pd.read_csv(file_path)
-#     df_train_view['date'] = df_train_view.date.apply(lambda x: pd.datetime.strptime(x, '%Y-%m-%d'))
-#
-#     return df_train_view
-#
-#
-# def _load_data_from_sever_if_file_is_missing(file_path):
-#     if not os.path.isfile(file_path):
-#         _load_data_from_sever()
-#
-#
-# def _load_data_from_sever():
-#     """
-#     This function makes sure that the csv files for the notebook are in the right local folder.
-#
-#     :return: None
-#     """
-#     local_zip_path = 'data/SK-3-3-Septa.zip'
-#     remote_zip_path = 'data/StarterKits/D3.3/SK-3-3-Septa.zip'
-#
-#     # 1. download the zip file locally if it is not yet present:
-#     pipeline.File(None, local_zip_path, remote_zip_path).make()
-#
-#     # 2. unzip the zip file:
-#     with zipfile.ZipFile(local_zip_path, 'r') as zip_ref:
-#         zip_ref.extractall('data')
-#
-#     # 3. remove the zip file:
-#     os.remove(local_zip_path)
-
-
 def remove_invalid_data_instances(df):
     """
     Remove invalid data instances from OTP dataset
 
-    :param df. a padas dataframe with OTP data
+    :param df. a pandas dataframe with OTP data
 
     :return a pandas dataframe in which the invalid instances are removed
     """
