@@ -1,1 +1,1 @@
-starterkits @ git+https://github.com/EluciDATALab/elucidatalab.starterkits.git
+starterkits @ git+https://github.com/EluciDATALab/elucidatalab.starterkits.git@SK_4_1
