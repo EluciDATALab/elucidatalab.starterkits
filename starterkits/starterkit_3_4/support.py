@@ -7,7 +7,7 @@ import numpy as np
 
 from statsmodels.tsa.seasonal import STL
 
-from starterkits import pipeline, DATA_PATH
+from starterkits import pipeline
 from starterkits.preprocessing.outliers import boxplot_outliers
 from starterkits.utils.df_utils import label_connected_elements_intervals
 
