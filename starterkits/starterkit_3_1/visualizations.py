@@ -138,7 +138,7 @@ def plot_calendar_heatmap(data):
 
         def _plot_heatmap(cmap):
             # noinspection PyTypeChecker
-            fig, ax = calmap.calendarplot(df.groupby(['Date']).sum()['Total'], monthticks=3,
+            fig, ax = calmap.calendarplot(df.groupby(['Date'])[['Total']].sum(), monthticks=3,
                                           yearlabels=True, how=None, linewidth=0, cmap=cmap, fillcolor='lightgray',
                                           fig_kws=dict(figsize=(20, 10), edgecolor='gray'))
             fig.colorbar(ax[0].get_children()[1], ax=ax.ravel().tolist(), label='total crossings')
