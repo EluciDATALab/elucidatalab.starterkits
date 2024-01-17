@@ -924,6 +924,6 @@ def get_test_scores():
 
     best_ = pd.DataFrame([['-', 94.0, 0.952381, 0.8, 0.869565, 'Two-Class Neural Network (best performing model from [1])']],
                          columns = ['model id','Accuracy', 'Precision', 'Recall', 'F1-score', 'model_type'])
-    scores = scores.append(best_)
+    scores = pd.concat([scores, best_])
     scores = scores.set_index('model_type')
     return(scores)
