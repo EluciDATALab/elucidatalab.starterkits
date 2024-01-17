@@ -50,9 +50,11 @@ def read_consumption_data(DATA_PATH, force=False):
                            str(DATA_PATH / 'SK_1_3' / 'household_power_consumption.txt'))
              .make(force=force))
 
-    parse = lambda x, y: datetime.strptime(x+' '+y, '%d/%m/%Y %H:%M:%S')
-    df = pd.read_csv(fname, sep=';', na_values=['?'], index_col=0,
-                     parse_dates=[['Date', 'Time']], date_parser=parse)
+    df = pd.read_csv(fname, sep=';', na_values=['?'], index_col=0)
+    df['Datetime'] = pd.to_datetime(df['Date'] + ' ' + df['Time'], 
+                                    format='%d/%m/%Y %H:%M:%S')
+    df.set_index('Datetime', inplace=True)
+    df.drop(columns=['Date', 'Time'], inplace=True)
     df = df.loc['2007-01-01':]
     return df
 
