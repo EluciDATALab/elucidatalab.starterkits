@@ -50,7 +50,7 @@ def read_consumption_data(DATA_PATH, force=False):
                            str(DATA_PATH / 'SK_1_3' / 'household_power_consumption.txt'))
              .make(force=force))
 
-    df = pd.read_csv(fname, sep=';', na_values=['?'], index_col=0)
+    df = pd.read_csv(fname, sep=';', na_values=['?'])
     df['Datetime'] = pd.to_datetime(df['Date'] + ' ' + df['Time'], 
                                     format='%d/%m/%Y %H:%M:%S')
     df.set_index('Datetime', inplace=True)
