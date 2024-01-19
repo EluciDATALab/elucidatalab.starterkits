@@ -2,6 +2,7 @@ geopy==2.4.1
 matplotlib==3.8.2
 numpy==1.26.3
 pandas==1.5.3
+requests==2.31.0
 scipy==1.11.4
 seaborn==0.13.1
 tqdm==4.66.1
