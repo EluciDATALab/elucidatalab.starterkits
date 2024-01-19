@@ -1,10 +1,13 @@
 cufflinks==0.17.3
+geographiclib==2.0
 ipywidgets==8.1.1
+ipypb==0.5.2
 matplotlib==3.8.2
 nbformat==5.9.2
 numpy==1.26.3
 pandas==1.5.3
 plotly==5.18.0
+requests==2.31.0
 scipy==1.11.4
 seaborn==0.13.1
 statsmodels==0.14.1
