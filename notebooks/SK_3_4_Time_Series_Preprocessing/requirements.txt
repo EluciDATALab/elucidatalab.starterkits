@@ -1,9 +1,12 @@
-starterkits @ git+https://github.com/EluciDATALab/elucidatalab.starterkits.git
-statsmodels==0.13.5
-requests==2.28.2
-tqdm==4.65.0
-ipypb==0.5.2
-ipywidgets==8.0.4
 cufflinks==0.17.3
-geographiclib==2.0
-nbformat==5.7.3
+ipywidgets==8.1.1
+matplotlib==3.8.2
+nbformat==5.9.2
+numpy==1.26.3
+pandas==1.5.3
+plotly==5.18.0
+scipy==1.11.4
+seaborn==0.13.1
+statsmodels==0.14.1
+tqdm==4.66.1
+starterkits @ git+https://github.com/EluciDATALab/elucidatalab.starterkits.git
