@@ -348,7 +348,7 @@ def plot_trip_duration_over_time(df, time='both', axes=None):
         axes[0].set_xticklabels(df_trips_dow.day)
         axes[0].set_ylabel('Number of Trips', size=14)
         ax2 = axes[0].twinx()
-        sns.lineplot(x='day', y='tripdurationMinutes', data=df_trips_dow, axes=ax2, marker='o', color='black')
+        sns.lineplot(x='day', y='tripdurationMinutes', data=df_trips_dow, ax=ax2, marker='o', color='black')
         ax2.set_ylim([0, 30])
         ax2.set_ylabel('Median Trip Duration (Minutes)', size=14);
 
@@ -358,7 +358,7 @@ def plot_trip_duration_over_time(df, time='both', axes=None):
         axes[1].set_xticklabels(df_trips_moy.month)
         axes[1].set_ylabel('Number of Trips', size=14)
         ax3 = axes[1].twinx()
-        sns.lineplot(x='month', y='tripdurationMinutes', data=df_trips_moy, axes=ax3, marker='o', color='black')
+        sns.lineplot(x='month', y='tripdurationMinutes', data=df_trips_moy, ax=ax3, marker='o', color='black')
         ax3.set_ylim([0, 30])
         ax3.set_ylabel('Median Trip Duration (Minutes)', size=14);
         plt.tight_layout();
@@ -370,7 +370,7 @@ def plot_trip_duration_over_time(df, time='both', axes=None):
         axes.set_xticklabels(df_trips_dow.day)
         axes.set_ylabel('Number of Trips', size=14)
         ax2 = axes.twinx()
-        sns.lineplot(x='day', y='tripdurationMinutes', data=df_trips_dow, axes=ax2, marker='o', color='black')
+        sns.lineplot(x='day', y='tripdurationMinutes', data=df_trips_dow, ax=ax2, marker='o', color='black')
         ax2.set_ylim([0, 30])
         ax2.set_ylabel('Median Trip Duration (Minutes)', size=14);
 
@@ -381,7 +381,7 @@ def plot_trip_duration_over_time(df, time='both', axes=None):
         axes.set_xticklabels(df_trips_moy.month)
         axes.set_ylabel('Number of Trips', size=14)
         ax3 = axes.twinx()
-        sns.lineplot(x='month', y='tripdurationMinutes', data=df_trips_moy, axes=ax3, marker='o', color='black')
+        sns.lineplot(x='month', y='tripdurationMinutes', data=df_trips_moy, ax=ax3, marker='o', color='black')
         ax3.set_ylim([0, 30])
         ax3.set_ylabel('Median Trip Duration (Minutes)', size=14);
         plt.tight_layout();
