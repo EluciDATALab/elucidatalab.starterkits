@@ -138,7 +138,7 @@ def plot_calendar_heatmap(data):
 
         def _plot_heatmap(cmap):
             # noinspection PyTypeChecker
-            data = df.groupby(['Date'])[['Total']].sum()
+            data = df.groupby(['Date']).Total.sum()
             fig, ax = calmap.calendarplot(data, monthticks=3,
                                           yearlabels=True, how=None, linewidth=0, cmap=cmap, fillcolor='lightgray',
                                           fig_kws=dict(figsize=(20, 10), edgecolor='gray'))
