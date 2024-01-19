@@ -1,1 +1,7 @@
+matplotlib==3.8.2
+numpy==1.26.3
+pandas==1.5.3
+requests==2.31.0
+scikit_learn==1.4.0
+tqdm==4.66.1
 starterkits @ git+https://github.com/EluciDATALab/elucidatalab.starterkits.git

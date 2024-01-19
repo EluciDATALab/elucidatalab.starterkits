@@ -1,4 +1,4 @@
-from sklearn.metrics import mean_squared_error, ConfusionMatrixDisplay, confusion_matrix
+from sklearn.metrics import root_mean_squared_error, ConfusionMatrixDisplay, confusion_matrix
 from starterkits import pipeline
 import copy
 import matplotlib.pylab as pylab
@@ -355,10 +355,10 @@ def rmse(original, compress_indiv, compressed_comb):
     df_reconstructed_individually = compress_indiv.reindex(original.index).interpolate(method='linear')
     df_reconstructed_combined = compressed_comb.reindex(original.index).interpolate(method='linear')
 
-    rmse_individually = mean_squared_error(original.drop(columns=['drive']),
-                                           df_reconstructed_individually.drop(columns=['drive']), squared=False)
-    rmse_combined = mean_squared_error(original.drop(columns=['drive']),
-                                       df_reconstructed_combined.drop(columns=['drive']), squared=False)
+    rmse_individually = root_mean_squared_error(original.drop(columns=['drive']),
+                                           df_reconstructed_individually.drop(columns=['drive']))
+    rmse_combined = root_mean_squared_error(original.drop(columns=['drive']),
+                                       df_reconstructed_combined.drop(columns=['drive']))
 
     print(f'RMSE for the sequential application of SDT: {rmse_individually:.2}')
     print(f'RMSE for the combined application of SDT: {rmse_combined:.2}')
