@@ -409,7 +409,7 @@ def plot_trip_duration_difference_between_stations(df):
     distance_difference_from_to.set_axis(trip_duration.columns.values, axis=0, inplace=True)
 
     # colored-Matrix
-    mask = np.zeros_like(distance_difference_from_to, dtype=np.bool)
+    mask = np.zeros_like(distance_difference_from_to, dtype=bool)
     mask[np.triu_indices_from(mask)] = True
     cmap = sns.diverging_palette(220, 10, as_cmap=True)
     plt.figure(figsize=(11, 9))
