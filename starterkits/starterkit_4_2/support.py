@@ -1,10 +1,8 @@
 import random
-import gc
 import zipfile
 import os
 import pandas as pd
 import numpy as np
-import seaborn as sb
 import plotly.express as px
 import matplotlib.pyplot as plt
 import pyswarms.backend as ps
@@ -12,9 +10,10 @@ from pyswarms.backend.topology import Star
 
 from tqdm.notebook import tqdm
 from starterkits import pipeline
+from datetime import timedelta
 from sklearn.preprocessing import MinMaxScaler, StandardScaler
 from sklearn.ensemble import RandomForestRegressor
-from sklearn.metrics import mean_squared_error, pairwise_distances, davies_bouldin_score, silhouette_score
+from sklearn.metrics import mean_squared_error, root_mean_squared_error, davies_bouldin_score, silhouette_score
 from scipy.spatial.distance import cdist
 from IPython.display import display, clear_output
 
@@ -124,6 +123,11 @@ class PreprocessConsumption:
         self.data_dict = dict.fromkeys(self.consumer_list)
         self.features_dict = dict.fromkeys(self.consumer_list)
 
+        self.x_train = None
+        self.x_test = None
+        self.y_train = None
+        self.y_test = None
+
     def add_time_features(self):
         """ Addd dow, moy and hod features"""
         self.data['dow'] = self.data['timestamp'].dt.dayofweek
@@ -197,10 +201,8 @@ class PreprocessConsumption:
             self.normalize_consumption()
         self.create_feature_df()
 
-        x_train, y_train = self.extract_x_y('train')
-        x_test, y_test = self.extract_x_y('test')
-
-        return x_train, y_train, x_test, y_test
+        self.x_train, self.y_train = self.extract_x_y('train')
+        self.x_test, self.y_test = self.extract_x_y('test')
 
 
 class Client:
@@ -303,7 +305,7 @@ class FederatedForest:
         self.client_ids = client_ids
         self.forest = None
         self.scores = None
-        self.all_forests = None
+        self.local_forests = None
         self.trees_and_losses = None
         self.forests_and_losses = None
         self.features = None
@@ -318,19 +320,18 @@ class FederatedForest:
 
     def train_local_forests(self):
         """ Select fixed orders, build and evaluate trees per client and order. """
-        self.all_forests = []
+        self.local_forests = []
         for nth_client, client in tqdm(enumerate(self.clients),
                                        desc='Retrieving trees', unit='client', total=len(self.clients)):
-            trees, forest = client.grow_forest(self.num_trees_per_client, self.tree_depth,
-                                               self.min_samples_per_split)
-            self.all_forests.append(forest)
+            _, forest = client.grow_forest(self.num_trees_per_client, self.tree_depth, self.min_samples_per_split)
+            self.local_forests.append(forest)
 
     def construct_global_forest(self):
         """ Each local forest donates trees (size forest / # workers) to construct 1 global model. """
-        # random.seed(42)
+        random.seed(42)
         glob_forest = np.array([
             random.sample(forest.estimators_, int(round(self.num_trees_per_client / len(self.clients), 0) + 1))
-            for forest in self.all_forests])
+            for forest in self.local_forests])
         glob_forest = glob_forest.flatten()
         glob_forest = glob_forest[random.sample(range(glob_forest.shape[0]), self.num_trees_per_client)]
         self.global_forest = glob_forest
@@ -340,37 +341,27 @@ class FederatedForest:
         self.train_local_forests()
         self.construct_global_forest()
 
-    def evaluate_local_forests(self):
-        """ Evaluate each local forest by each worker to create evaluation vector. """
-        # self.forests_and_losses = pd.DataFrame()
-        # for client in tqdm(self.clients):
-        #     forests_and_loss_client = client.evaluate_forests(self.all_forests)
-        #     self.forests_and_losses = self.forests_and_losses.append(forests_and_loss_client)
-
-        evaluations = [client.evaluate_forests(self.all_forests) for client in tqdm(self.clients)]
-        self.forests_and_losses = pd.concat(evaluations, ignore_index=True)
+    # def evaluate_local_forests(self):
+    #     """ Evaluate each local forest by each worker to create evaluation vector. """
+    #     evaluations = [client.evaluate_forests(self.local_forests) for client in tqdm(self.clients)]
+    #     self.forests_and_losses = pd.concat(evaluations, ignore_index=True)
 
     def evaluate_global_forest(self):
         """ Evaluate each tree in global forest to create evaluation vector. """
-        # self.trees_and_losses = pd.DataFrame()
-        # for client in tqdm(self.clients):
-        #     evaluation_vector = client.evaluate_trees(self.global_forest)
-        #     self.trees_and_losses = self.trees_and_losses.append(evaluation_vector)
-
         evaluations = [client.evaluate_trees(self.global_forest) for client in tqdm(self.clients,
                                                                                     desc='Evaluating trees',
                                                                                     unit='client')]
         self.trees_and_losses = pd.concat(evaluations, ignore_index=True)
 
-    def show_rmse_score(self, annotate=True):
-        """ Bar plot of MSE scores."""
-        df = self.scores.melt(ignore_index=False, var_name='Forest type', value_name='RMSE')
-        plt.figure(figsize=(25, 5))
-        ax = sb.barplot(data=df, x=df.index, y='RMSE', hue='Forest type')
-        ax.set(title='RMSE scores per client for local, cluster and global forests.')
-        if annotate:
-            for i in ax.containers:
-                ax.bar_label(i, fmt="%.4f", padding=2, fontsize=8)
+    # def show_rmse_score(self, annotate=True):
+    #     """ Bar plot of MSE scores."""
+    #     df = self.scores.melt(ignore_index=False, var_name='Forest type', value_name='RMSE')
+    #     plt.figure(figsize=(25, 5))
+    #     ax = sb.barplot(data=df, x=df.index, y='RMSE', hue='Forest type')
+    #     ax.set(title='RMSE scores per client for local, cluster and global forests.')
+    #     if annotate:
+    #         for i in ax.containers:
+    #             ax.bar_label(i, fmt="%.4f", padding=2, fontsize=8)
 
     # def show_losses(self, per_client=False, loss_type=None):
     #     """ Show losses of trees."""
@@ -396,77 +387,67 @@ class FederatedForest:
     #         plt.xticks(rotation=90)
     #         ax.legend(title='Owners', loc='upper left', bbox_to_anchor=(1, 1))
 
-    def show_prediction_errors_per_cluster(self, clustering_result, prep):
-        global_forest = self.trees_and_losses.drop_duplicates(['tree'])
+    # def show_prediction_errors_per_cluster(self, clustering_result, prep):
+    #     global_forest = self.trees_and_losses.drop_duplicates(['tree'])
+    #
+    #     for i, cluster in enumerate(clustering_result):
+    #         cluster_df = pd.DataFrame()
+    #
+    #         for client in cluster:
+    #             x = prep.features_dict[client]['test'][0]
+    #             preds_global = [tree.predict(x) for tree in global_forest.tree.to_list()]
+    #
+    #             pred_df = pd.DataFrame(data=[np.mean(preds_global, axis=0), prep.features_dict[client]['test'][1]],
+    #                                    columns=x.index, index=['pred_global', 'true']).T
+    #             pred_df['pred_error'] = (pred_df.true - pred_df.pred_global)
+    #             cluster_df[client] = pred_df.pred_error
+    #
+    #         cluster_df['dayofweek'] = cluster_df.reset_index().timestamp.dt.dayofweek.values
+    #         cluster_df['time'] = cluster_df.reset_index().timestamp.dt.time.values
+    #
+    #         grouped = cluster_df.groupby(['dayofweek', 'time']).median()
+    #         grouped = grouped.reset_index(drop=True)
+    #         fig = px.line(data_frame=grouped,
+    #                       title=f'Cluster {i}',
+    #                       labels={'variable': 'client'},
+    #                       template='plotly_white')
+    #         fig.show()
+    #
+    # @staticmethod
+    # def show_error_scores_per_cluster(clustering_result, samples):
+    #     for i, cluster in enumerate(clustering_result):
+    #         cluster_clients = samples.loc[cluster].T
+    #
+    #         fig = px.line(data_frame=cluster_clients,
+    #                       title=f'Cluster {i}',
+    #                       labels={'variable': 'client'},
+    #                       template='plotly_white')
+    #         fig.show()
+    #
+    # @staticmethod
+    # def show_consumption_per_cluster(clustering_result, prep):
+    #     for i, cluster in enumerate(clustering_result):
+    #         val_sets = pd.concat([prep.features_dict[client]['test'][1] for client in cluster], axis=1)
+    #         val_sets = val_sets.astype(float)
+    #         val_sets.columns = cluster
+    #         val_sets['dayofweek'] = val_sets.reset_index().timestamp.dt.dayofweek.values
+    #         val_sets['time'] = val_sets.reset_index().timestamp.dt.time.values
+    #
+    #         grouped = val_sets.groupby(['dayofweek', 'time']).median()
+    #         grouped = grouped.reset_index(drop=True)
+    #
+    #         fig = px.line(data_frame=grouped,
+    #                       title=f'Cluster {i}',
+    #                       labels={'variable': 'client'},
+    #                       template='plotly_white')
+    #         fig.show()
 
-        for i, cluster in enumerate(clustering_result):
-            cluster_df = pd.DataFrame()
-
-            for client in cluster:
-                x = prep.features_dict[client]['test'][0]
-                preds_global = [tree.predict(x) for tree in global_forest.tree.to_list()]
-
-                pred_df = pd.DataFrame(data=[np.mean(preds_global, axis=0), prep.features_dict[client]['test'][1]],
-                                       columns=x.index, index=['pred_global', 'true']).T
-                pred_df['pred_error'] = (pred_df.true - pred_df.pred_global)
-                cluster_df[client] = pred_df.pred_error
-
-            cluster_df['dayofweek'] = cluster_df.reset_index().timestamp.dt.dayofweek.values
-            cluster_df['time'] = cluster_df.reset_index().timestamp.dt.time.values
-
-            grouped = cluster_df.groupby(['dayofweek', 'time']).median()
-            grouped = grouped.reset_index(drop=True)
-            fig = px.line(data_frame=grouped,
-                          title=f'Cluster {i}',
-                          labels={'variable': 'client'},
-                          template='plotly_white')
-            fig.show()
-
-    @staticmethod
-    def show_error_scores_per_cluster(clustering_result, samples):
-        for i, cluster in enumerate(clustering_result):
-            cluster_clients = samples.loc[cluster].T
-
-            fig = px.line(data_frame=cluster_clients,
-                          title=f'Cluster {i}',
-                          labels={'variable': 'client'},
-                          template='plotly_white')
-            fig.show()
-
-    @staticmethod
-    def show_consumption_per_cluster(clustering_result, prep):
-        for i, cluster in enumerate(clustering_result):
-            val_sets = pd.concat([prep.features_dict[client]['test'][1] for client in cluster], axis=1)
-            val_sets = val_sets.astype(float)
-            val_sets.columns = cluster
-            val_sets['dayofweek'] = val_sets.reset_index().timestamp.dt.dayofweek.values
-            val_sets['time'] = val_sets.reset_index().timestamp.dt.time.values
-
-            grouped = val_sets.groupby(['dayofweek', 'time']).median()
-            grouped = grouped.reset_index(drop=True)
-
-            fig = px.line(data_frame=grouped,
-                          title=f'Cluster {i}',
-                          labels={'variable': 'client'},
-                          template='plotly_white')
-            fig.show()
-
-    def get_evaluation_vectors(self, evaluation_type='global_forest', remove_workers=None):
+    def get_evaluation_vectors(self):
         """ Get evaluation vector per worker. Can either be all trees in global forest or all local forests"""
-        if remove_workers is None:
-            remove_workers = []
-        if evaluation_type == 'global_forest':
-            df = self.trees_and_losses
-        elif evaluation_type == 'local_forests':
-            df = self.forests_and_losses
-        else:
-            df = None
-
-        df = df[~df.owners.isin(remove_workers)]
-        df = df[~df.client_id.isin(remove_workers)]
+        df = self.trees_and_losses
 
         ev_vectors = df.pivot_table(index='client_id',
-                                    columns=['tree_num'] if evaluation_type == 'global_forest' else ['owners'],
+                                    columns=['tree_num'],
                                     values='mse_loss')
         scaler = StandardScaler()
         ev_vectors_scaled = pd.DataFrame(scaler.fit_transform(ev_vectors.T),
@@ -475,26 +456,42 @@ class FederatedForest:
 
         return ev_vectors, ev_vectors_scaled
 
-    @staticmethod
-    def show_distance_matrices(evaluation_vectors, evaluation_vectors_scaled):
-        """ Plot distance matrices containing pairwise distance between evaluation vectors."""
-        fig, axs = plt.subplots(2, 2, figsize=(25, 20))
 
-        for i, (df, scaling) in enumerate(
-                zip([evaluation_vectors, evaluation_vectors_scaled], ['raw', 'z-scored'])):
-            for j, metric in enumerate(['euclidean', 'cosine']):
-                dist = pd.DataFrame(pairwise_distances(df, metric=metric), index=list(df.index),
-                                    columns=list(df.index))
-                axs[i, j].set_title(f'{scaling}, {metric} distances')
-                _ = sb.heatmap(dist, ax=axs[i, j], cmap='Blues', xticklabels=True, yticklabels=True)
-                axs[i, j].tick_params(left=False, bottom=False)
-                plt.rcParams['font.size'] = 10
+def forest_from_tree_list(tree_list):
+    """ Create forest from list of trees. """
+    forest = RandomForestRegressor(max_depth=tree_list[0].max_depth,
+                                   min_samples_split=tree_list[0].min_samples_split,
+                                   max_samples=0.8,
+                                   # random_state=1,
+                                   )
+    forest.estimators_ = tree_list
+    forest.n_outputs_ = 1
 
-        fig.tight_layout()
+    forest.owners = sorted(np.unique([tree.owner for tree in tree_list]))
+    forest.n_estimators = len(forest.estimators_)
+
+    return forest
+
+    # @staticmethod
+    # def show_distance_matrices(evaluation_vectors, evaluation_vectors_scaled):
+    #     """ Plot distance matrices containing pairwise distance between evaluation vectors."""
+    #     fig, axs = plt.subplots(2, 2, figsize=(25, 20))
+    #
+    #     for i, (df, scaling) in enumerate(
+    #             zip([evaluation_vectors, evaluation_vectors_scaled], ['raw', 'z-scored'])):
+    #         for j, metric in enumerate(['euclidean', 'cosine']):
+    #             dist = pd.DataFrame(pairwise_distances(df, metric=metric), index=list(df.index),
+    #                                 columns=list(df.index))
+    #             axs[i, j].set_title(f'{scaling}, {metric} distances')
+    #             _ = sb.heatmap(dist, ax=axs[i, j], cmap='Blues', xticklabels=True, yticklabels=True)
+    #             axs[i, j].tick_params(left=False, bottom=False)
+    #             plt.rcParams['font.size'] = 10
+    #
+    #     fig.tight_layout()
 
 
 class PSO:
-    def __init__(self, samples=None, topology=Star(), max_n_clusters=15, n_iterations=5, n_particles=200,
+    def __init__(self, samples=None, topology=Star(), max_n_clusters=10, n_iterations=5, n_particles=100,
                  n_convergence=50, cluster_validation='silhouette', distance_metric='cosine', plot_iterations=True):
         self.samples = samples.copy()
         self.topology = topology
@@ -512,8 +509,12 @@ class PSO:
         self.m = None
         self.clustering_result = None
         self.labels = None
+        self.dist_to_candidate_centroids = None
+        self.fig = None
+        self.ax = None
         self.adjust_max_n_clusters()
         self.init_m()
+        self.pairwise_dist = cdist(self.samples.values, self.samples.values, metric=self.distance_metric)
 
     def adjust_max_n_clusters(self):
         self.max_n_clusters = (self.max_n_clusters
@@ -531,41 +532,38 @@ class PSO:
         for i in range(self.n_iterations):
             self.swarm = ps.create_swarm(n_particles=self.n_particles, dimensions=self.max_n_clusters, binary=True,
                                          clamp=None, discrete=True, options=self.options)
+            self.dist_to_candidate_centroids = cdist(self.samples, self.m, metric=self.distance_metric)
             self.pso_until_convergence(i)
             self.reinit_ignored_centroids()
             self.labels = self.get_partitioning(self.swarm.best_pos)
-            _ = gc.collect()
 
     def pso_until_convergence(self, i):
         """ Peform PSO steps until convergence (max_repeats iterations without change in best_cost). """
         cost_history = []
-        prev_result = None
+        prev_best_cost = None
         iteration = 0
-        iterations_without_change = 0
-        self.dist_to_all_centroids = cdist(self.samples, self.m, metric=self.distance_metric)
-        self.swarm.pbest_cost = np.full(200, np.inf)
+        stable_iterations = 0
+        self.swarm.pbest_cost = np.full(100, np.inf)
 
         while True:
             self.pso_step()
             cost_history.append(self.swarm.best_cost)
             iteration += 1
+
             if self.plot_iterations:
                 self.plot_cost(ax=self.ax[i], cost_history=cost_history, n_iters=iteration,
                                title=f'Iteration: {iteration} | swarm.best_cost: {self.swarm.best_cost:.4f}')
-            if self.swarm.best_cost == prev_result:
-                iterations_without_change += 1
+            if self.swarm.best_cost == prev_best_cost:
+                stable_iterations += 1
             else:
-                iterations_without_change = 0
-                prev_result = self.swarm.best_cost
-            if iterations_without_change == self.n_convergence:
-                # del cost_history, prev_result, iteration, iterations_without_change
+                stable_iterations = 0
+                prev_best_cost = self.swarm.best_cost
+            if stable_iterations == self.n_convergence:
                 break
 
     def pso_step(self):
         """ Perform 1 iteration of PSO. """
-        self.swarm.current_cost = self.compute_cost_opt(self.swarm.position)  # Compute current cost
-        # self.swarm.pbest_cost = self.compute_cost_opt(self.swarm.pbest_pos)  # Compute pbest pos
-
+        self.swarm.current_cost = self.compute_cost(self.swarm.position)  # Compute current cost
         self.swarm.pbest_pos, self.swarm.pbest_cost = ps.compute_pbest(self.swarm)  # Update and store
 
         # Part 2: Update global best (dependent on topology)
@@ -592,11 +590,10 @@ class PSO:
 
     def get_partitioning(self, particle):
         """ Return partitioning of samples using centroids chosen by particle."""
-        # dists = cdist(samples, chosen_centroids, metric=self.distance_metric)
-        dists = self.dist_to_all_centroids[:, particle.astype(bool)]
-        centroid_indices = np.argmin(dists, axis=1)
+        dists_to_chosen_centroids = self.dist_to_candidate_centroids[:, particle.astype(bool)]
+        clustering = np.argmin(dists_to_chosen_centroids, axis=1)
 
-        return centroid_indices
+        return clustering
 
     def clustering_score(self, labeling, metric=None):
         """ Compute cluster validation score. """
@@ -612,60 +609,31 @@ class PSO:
         else:
             return None
 
-    # def dunn_index_cosine(self, x, labels):
-    #     # Compute pairwise cosine distances between points
-    #     D = cdist(x, x, metric=self.distance_metric)
-    #
-    #     # Find all unique cluster labels
-    #     unique_labels = np.unique(labels)
-    #
-    #     # Compute inter-cluster distances and intra-cluster diameters
-    #     inter_cluster_distances = np.zeros((len(unique_labels),))
-    #     intra_cluster_diameters = np.zeros((len(unique_labels),))
-    #     for k in unique_labels:
-    #         cluster_k = x[labels == k, :]
-    #         if len(cluster_k) == 0:
-    #             continue
-    #         inter_cluster_distances[k] = np.max(
-    #             [np.max(D[labels == k][:, labels != k]), np.max(D[labels != k][:, labels == k])])
-    #         intra_cluster_diameters[k] = np.max(cdist(cluster_k, cluster_k, metric=self.distance_metric))
-    #
-    #     # Compute Dunn index
-    #     dunn_index = np.min(inter_cluster_distances) / np.max(intra_cluster_diameters)
-    #     return dunn_index
+    def dunn_index_cosine(self, x, labels):
+        # Compute pairwise cosine distances between points
+        # Find all unique cluster labels
+        unique_labels = np.unique(labels)
 
-    # def compute_cost(self, x):
-    #     """ Calculate partition quality of each particle. Input are positions of all particles and possible
-    #         centroids to choose from."""
-    #     costs = []
-    #     for particle in x:
-    #         if sum(particle) < 2:
-    #             costs.append(np.inf)
-    #         else:
-    #             chosen_centroids = self.m[particle.astype(bool)]
-    #             self.get_partitioning(chosen_centroids, self.samples.values)
-    #             cost = self.clustering_score(metric=self.cluster_validation)
-    #             costs.append(cost)
-    #
-    #     return np.array(costs)
+        # Compute inter-cluster distances and intra-cluster diameters
+        inter_cluster_distances = np.zeros((len(unique_labels),))
+        intra_cluster_diameters = np.zeros((len(unique_labels),))
+        for k in unique_labels:
+            cluster_k = x[labels == k, :]
+            if len(cluster_k) == 0:
+                continue
+            inter_cluster_distances[k] = np.max(
+                [np.max(self.pairwise_dist[labels == k][:, labels != k]), np.max(self.pairwise_dist[labels != k][:, labels == k])])
+            intra_cluster_diameters[k] = np.max(cdist(cluster_k, cluster_k, metric=self.distance_metric))
 
-    def compute_cost_opt(self, x):
+        # Compute Dunn index
+        dunn_index = np.min(inter_cluster_distances) / np.max(intra_cluster_diameters)
+        return dunn_index
+
+    def compute_cost(self, x):
         """ Calculate partition quality of each particle. Input are positions of all particles. """
-        # costs = np.full(x.shape[0], np.inf)  # Pre-fill costs with infinite
-
-        # Process only those particles that have sum of positions >= 2
-        # valid_indices = np.where(np.sum(x, axis=1) >= 2)[0]
-
-        # all_chosen_centroids = [self.m.values[x[i].astype(bool)] for i in valid_indices]
         labeling_per_particle = [self.get_partitioning(particle) if np.sum(particle) >= 2 else None for particle in x]
-        cost_per_particle = [self.clustering_score(labeling, metric=self.cluster_validation) if labeling is not None else np.inf for labeling in labeling_per_particle]
-        #
-        # for idx in valid_indices:
-        #     particle = x[idx]
-        #     # chosen_centroids = self.m.values[particle.astype(bool)]
-        #     self.get_partitioning(particle)
-        #     cost = self.clustering_score(metric=self.cluster_validation)
-        #     costs[idx] = cost  # Set the cost only for valid particles
+        cost_per_particle = [self.clustering_score(labeling, metric=self.cluster_validation)
+                             if labeling is not None else np.inf for labeling in labeling_per_particle]
 
         return np.array(cost_per_particle)
 
@@ -695,20 +663,6 @@ class PSO:
 
             display(self.fig)
             clear_output(wait=True)
-
-    def show_clusters(self, title=None):
-        df = self.samples.T.melt(ignore_index=False).reset_index().set_index('client_id')
-        color_dict = dict(zip(self.samples.index, self.labels))
-
-        df['label'] = df.index.map(color_dict)
-        fig = px.line(df.reset_index().sort_values(self.samples.columns.name),
-                      y='value',
-                      color='label',
-                      x=self.samples.columns.name,
-                      line_group='client_id',
-                      template='plotly_white',
-                      title=title)
-        fig.show()
 
     def show_consumption_per_cluster(self, cluster_labels, prep, per_cluster=True):
         if per_cluster:
@@ -751,3 +705,320 @@ class PSO:
         df['labels'] = self.labels
 
         return df.reset_index().groupby('labels').client_id.agg(list)
+
+
+class FedRepo:
+    def __init__(self, data=None, forest_support_threshold=0.0333, worker_repo_threshold=0.2, num_trees=100):
+        self.local_forests = {}
+        self.active_models = {}
+        self.thresh_dict = {}
+        self.worker_data = data
+        self.client_ids = data.consumer_list
+        self.evaluation_vectors = None
+        self.clusters = None
+        self.global_forest = None
+
+        self.forest_support_threshold = forest_support_threshold
+        self.worker_repo_threshold = int(worker_repo_threshold * len(self.client_ids))
+        self.num_trees = num_trees
+
+        self.worker_repo = []
+        self.tree_repo = {}
+        self.maintenance_log = {}
+        self.worker_repository_hist = []
+        self.retrain_needed = False
+        self.predicted_day = None
+        self.days_since_retrain = None
+
+        self.without_maintenance_dict = {worker: {} for worker in self.client_ids}
+        self.with_maintenance_dict = {worker: {'predictions': [], 'rmse': [],
+                                               'pred_index': [], 'active_model': []} for worker in self.client_ids}
+        # random.seed(1)
+
+    def initialize(self):
+        """ Initialization stage. """
+        self.worker_repo = self.client_ids
+        self.active_models = {}
+
+    def training(self):
+        """ Training stage. """
+        fed_forest = FederatedForest(client_ids=self.worker_repo)
+        fed_forest.assign_client_data(self.worker_data.x_train, self.worker_data.y_train,
+                                      self.worker_data.x_test, self.worker_data.y_test)
+
+        fed_forest.train()
+        fed_forest.evaluate_global_forest()
+        _, self.evaluation_vectors = fed_forest.get_evaluation_vectors()
+
+        for forest in fed_forest.local_forests:
+            self.local_forests[forest.owners] = forest
+
+        self.update_tree_repo()
+        self.set_global_model()
+
+    def clustering(self, plot_iterations=True):
+        """ Clustering stage. """
+        pso_clusterer = PSO(samples=self.evaluation_vectors, cluster_validation='dunn', plot_iterations=plot_iterations)
+        pso_clusterer.execute()
+        self.clusters = pso_clusterer.get_clusters()
+        self.create_cluster_models()
+        self.determine_thresholds()
+
+        self.worker_repo = []
+
+    def concept_drift_mitigation(self):
+        """ Generate predictions and monitor performance for validation set. Retrain if needed. """
+        days_val_set = pd.date_range(start='2012-08-01', end='2013-12-31', freq='D')
+
+        self.days_since_retrain = 0
+
+        for day in tqdm(days_val_set, desc='Days predicted', unit='day'):
+            self.predicted_day = day
+            self.generate_cluster_predictions(day)
+
+            if self.days_since_retrain >= 3:
+                self.check_rmse_thresholds()
+
+            self.set_model_support()
+            self.check_support()
+            self.check_worker_allocation()
+            self.worker_repository_hist.append(len(self.worker_repo))
+
+            self.check_worker_repo()
+            self.days_since_retrain += 1
+            self.clean_models()
+
+            if self.retrain_needed:
+                print(f'Worker repository contains {len(self.worker_repo)} workers. Retraining is invoked.')
+                self.retrain()
+                self.retrain_needed = False
+                self.days_since_retrain = 0
+
+    def retrain(self):
+        """ Retraining stage. """
+        end_date = self.predicted_day
+        start_date_train = self.predicted_day - timedelta(days=120)
+        end_date_train = self.predicted_day - timedelta(days=30)
+
+        x_train = []
+        y_train = []
+        x_test = []
+        y_test = []
+
+        for worker in self.worker_repo:
+            x_train.append(self.worker_data.features_dict[worker]['val'][0][start_date_train: end_date_train])
+            y_train.append(self.worker_data.features_dict[worker]['val'][1][start_date_train: end_date_train])
+
+            x_test.append(self.worker_data.features_dict[worker]['val'][0][end_date_train: end_date])
+            y_test.append(self.worker_data.features_dict[worker]['val'][1][end_date_train: end_date])
+
+        # delete old global forest
+        del self.active_models[self.global_forest]
+        self.maintenance_log[self.predicted_day] = self.worker_repo
+
+        self.training()
+        print('Finding optimal clustering...')
+        self.clustering(plot_iterations=False)
+
+    def update_tree_repo(self):
+        """ Donate trees from local forests to tree repo. """
+        portion = 5
+
+        for worker in self.worker_repo:
+            self.tree_repo[worker] = random.sample(self.local_forests[worker].estimators_, int(portion))
+
+    def set_global_model(self):
+        """ Set/update global model. """
+        tree_pool = np.array([trees for worker, trees in self.tree_repo.items()]).flatten()
+        selected_trees = random.sample(population=list(tree_pool), k=self.num_trees)
+
+        self.global_forest = forest_from_tree_list(selected_trees)
+        self.global_forest.support = 0
+        self.active_models[self.global_forest] = []
+
+    def create_cluster_models(self):
+        """ Create federated model for each cluster. """
+        for cluster in self.clusters:
+            tree_pool = np.array([self.local_forests[worker].estimators_ for worker in cluster]).flatten()
+            selected_trees = random.sample(population=list(tree_pool), k=self.num_trees)
+            cluster_forest = forest_from_tree_list(selected_trees)
+
+            self.active_models[cluster_forest] = cluster.copy()
+
+        self.active_models[self.global_forest] = []
+        self.set_model_support()
+
+    def get_model(self, worker):
+        """ Return key (model) of worker (in worker list). """
+        return [key for key, worker_list in self.active_models.items() if worker in worker_list][0]
+
+    def clean_models(self):
+        """ Clean up any cluster model that has been deactivated. """
+        self.active_models = {model: self.active_models[model] for model in self.active_models
+                              if len(self.active_models[model]) != 0 or model == self.global_forest}
+
+    def predict_test_set(self):
+        """ Generate predictions using cluster model on test set. """
+        pred_dict = {}
+
+        for worker in self.worker_repo:
+            feature_df, target = self.worker_data.features_dict[worker]['test']
+            cluster_forest = self.get_model(worker)
+            preds_cluster = cluster_forest.predict(feature_df)
+            pred_df = pd.DataFrame({'pred_cluster': preds_cluster,
+                                    'true': target},
+                                   index=feature_df.index)
+
+            pred_dict[worker] = pred_df
+
+        return pred_dict
+
+    def get_daily_rmse_test(self):
+        """ Get daily RMSE for predictions of cluster forest for each worker's test set. """
+        rmse_dict = {}
+        pred_dict_test = self.predict_test_set()
+
+        for worker in pred_dict_test:
+            pred_df = pred_dict_test[worker].copy()
+            pred_df['date'] = pred_df.index.date  # Assuming 'index' is of datetime type
+
+            daily_rmses = []
+
+            for date, day in pred_df.groupby('date'):
+                cluster_rmse = np.sqrt(mean_squared_error(day['true'], day['pred_cluster']))
+                daily_rmses.append([date, cluster_rmse])
+
+            rmse_dict[worker] = pd.DataFrame(daily_rmses, columns=['date', 'cluster']).set_index('date')
+
+        return rmse_dict
+
+    def determine_thresholds(self):
+        """ Determine thresholds for concept drift based on daily RMSE on training set of cluster forest. """
+        rmse_dict = self.get_daily_rmse_test()
+        for worker in rmse_dict:
+            thresh = rmse_dict[worker].cluster.mean() + (3 * rmse_dict[worker].cluster.std())
+            self.thresh_dict[worker] = thresh
+
+    def check_rmse_thresholds(self):
+        """ Check RMSE of past three days for every worker and compare with threshold. """
+        for worker in self.client_ids:
+            if worker not in set(self.worker_repo):
+                rmse_hist = self.with_maintenance_dict[worker]['rmse'][-3:]
+                exceeds_threshold = all(score > self.thresh_dict[worker] for score in rmse_hist)
+                if exceeds_threshold:
+                    print(f'{self.predicted_day.date()}: global model is activated for {worker}.')
+                    self.activate_global_model(worker)
+
+    def activate_global_model(self, worker):
+        """ Remove worker from active cluster forest, activate global model and add worker to maintenance. """
+        self.worker_repo.append(worker)
+
+        cluster_forest = self.get_model(worker)
+        self.active_models[cluster_forest].remove(worker)
+        self.active_models[self.global_forest].append(worker)
+
+    def set_model_support(self):
+        """ Divide amount of workers predicted by active forest by total amount to get model support. """
+        for (active_model, workers) in self.active_models.items():
+            active_model.support = len(workers) / len(self.client_ids)
+
+    def check_support(self):
+        """ Check support of federated models. If below threshold, deactivate model and replace by global forest. """
+        for active_model in self.active_models.keys():
+            if (active_model.support <= self.forest_support_threshold) & (active_model != self.global_forest):
+                print(f'{self.predicted_day.date()}: Model support too low. Global model activated '
+                      f'for workers {self.active_models[active_model]}.')
+                self.worker_repo.extend(self.active_models[active_model])
+                self.active_models[self.global_forest].extend(self.active_models[active_model])
+                self.active_models[active_model] = []
+
+    def check_worker_repo(self):
+        """ Check if maintenance repo exceeds limit. If so, retrain is needed."""
+        if len(self.worker_repo) >= self.worker_repo_threshold:
+            self.retrain_needed = True
+
+    def generate_cluster_predictions(self, day):
+        """ Generate predictions for each worker using their active model. """
+        for cluster_forest, cluster in self.active_models.items():
+            for worker in cluster:
+                features_day = self.worker_data.features_dict[worker]['val'][0].loc[day.strftime('%Y-%m-%d')]
+                target = self.worker_data.features_dict[worker]['val'][1].loc[day.strftime('%Y-%m-%d')]
+
+                if features_day.empty:
+                    continue
+
+                preds = cluster_forest.predict(features_day)
+                rmse = root_mean_squared_error(target, preds)
+
+                self.with_maintenance_dict[worker]['rmse'].append(rmse)
+                self.with_maintenance_dict[worker]['pred_index'].extend(features_day.index)
+                self.with_maintenance_dict[worker]['predictions'].extend(preds)
+                self.with_maintenance_dict[worker]['active_model'].append('global' if worker in self.worker_repo
+                                                                          else 'cluster')
+
+    def check_worker_allocation(self):
+        """ Ensure all workers are accounted for in the active models. """
+        workers_with_models = sum(len(cluster) for cluster in self.active_models.values())
+        assert workers_with_models == len(self.client_ids)
+
+    def generate_without_maintenance(self):
+        """ Generate predictions for each worker using their active model. """
+        self.without_maintenance_dict = {worker: {} for worker in self.client_ids}
+
+        for worker in tqdm(self.client_ids, desc='Generating predictions', unit='worker'):
+            cluster_forest = self.get_model(worker)
+            features = self.worker_data.features_dict[worker]['val'][0]
+            target = self.worker_data.features_dict[worker]['val'][1]
+
+            preds_cluster = cluster_forest.predict(features)
+            preds_local = self.local_forests[worker].predict(features)
+            preds_global = self.global_forest.predict(features)
+
+            self.without_maintenance_dict[worker]['pred_cluster'] = preds_cluster
+            self.without_maintenance_dict[worker]['pred_local'] = preds_local
+            self.without_maintenance_dict[worker]['pred_global'] = preds_global
+            self.without_maintenance_dict[worker]['true'] = target
+
+    # def plot_rmse(self, rmse_dict):
+    #     """ Plot RMSE per forest type and worker over full predicted set. """
+    #     df = pd.DataFrame(rmse_dict, index=['local', 'cluster', 'global']).T
+    #     df['label'] = self.labels
+    #     melted = df.melt(id_vars='label', var_name='Forest type', value_name='RMSE', ignore_index=False).reset_index()
+    #
+    #     ax = sb.catplot(data=melted, kind='bar', x='index', row='label', y='RMSE', hue='Forest type', height=6,
+    #                     aspect=3, sharex=False)
+    #     ax.set_xticklabels(rotation=45)
+    #     ax.tight_layout()
+    #
+    # def plot_rmse_line(self, rmse_dict):
+    #     # df = pd.DataFrame(rmse_dict, index=['local', 'global', 'active', 'without_maintenance']).T
+    #     df = pd.DataFrame(rmse_dict, index=['local', 'federated', 'global']).T
+    #
+    #     df['cluster'] = self.labels
+    #     df = df.drop('MAC004863')
+    #     df = df.melt(id_vars='cluster', ignore_index=False)
+    #     fig = px.line(data_frame=df, y='value', line_dash='variable', template='plotly_white', facet_row='cluster', color='cluster', height=500, line_dash_sequence=['dot', 'solid', 'dash'], width=900, facet_row_spacing=0.14,
+    #                   labels={'variable': 'Forest type', 'value': 'RMSE'}
+    #                   )
+    #     fig.update_layout(font=dict(size=14))
+    #     fig.update_xaxes(matches=None, mirror='all', automargin=True)
+    #     # fig.update_yaxes(matches=None)
+    #     fig.for_each_yaxis(lambda yaxis: yaxis.update(showticklabels=True))
+    #     fig.update_layout(showlegend=False)
+    #     fig.for_each_annotation(lambda a: a.update(text=''))
+    #     # fig.update_layout(xaxes=dict(tickfont=dict(size=2)))
+    #     fig.update_layout(autosize=False, width=1000, height=1200,)
+    #     fig.update_yaxes(matches=None)
+    #     fig.update_xaxes(tickfont=dict(size=7))
+    #
+    #     # fig.update_layout(legend=dict(title='Model',
+    #     #                     orientation="h",
+    #     #                     entrywidth=50,
+    #     #                     yanchor="bottom",
+    #     #                     y=1.02,
+    #     #                     xanchor="right",
+    #     #                     x=1
+    #     #                 ))
+    #     fig.for_each_xaxis(lambda xaxis: xaxis.update(showticklabels=True, tickangle=45, title='household'))
+    #
+    #     fig.show()
