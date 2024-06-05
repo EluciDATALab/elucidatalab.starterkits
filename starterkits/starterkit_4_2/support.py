@@ -401,7 +401,7 @@ class PSO:
         for i in range(self.n_iterations):
             rng = np.random.default_rng(seed=42)
             self.swarm = ps.create_swarm(n_particles=self.n_particles, dimensions=self.max_n_clusters, binary=True,
-                                         clamp=None, discrete=True, options=self.options, 
+                                         clamp=None, discrete=True, options=self.options,
                                          init_pos=rng.choice([0, 1], size=(self.n_particles, self.max_n_clusters)))
             self.dist_to_candidate_centroids = cdist(self.samples, self.m, metric=self.distance_metric)
             self.pso_until_convergence(i)
@@ -455,7 +455,7 @@ class PSO:
 
         new_centroids = self.samples.drop(to_drop).sample(len(ignored_centroids), random_state=42)
         self.already_picked_centroids.extend(new_centroids.index)
-        
+
         mapper = {name_old: name_new for name_old, name_new in zip(ignored_centroids, new_centroids.index)}
         m_reinit.rename(mapper, inplace=True)
 
@@ -546,7 +546,7 @@ class PSO:
 class FedRepo:
     def __init__(self, data=None, forest_support_threshold=0.033, worker_repo_threshold=0.1667, num_trees=100):
         self.local_forests = {}
-        self.active_models = {}
+        self.active_models_repo = {}
         self.thresh_dict = {}
         self.worker_data = data
         self.client_ids = data.consumer_list
@@ -574,7 +574,7 @@ class FedRepo:
     def initialize(self):
         """ Initialization stage. """
         self.worker_repo = self.client_ids
-        self.active_models = {}
+        self.active_models_repo = {}
 
     def training(self):
         """ Training stage. """
@@ -649,7 +649,7 @@ class FedRepo:
             y_test.append(self.worker_data.features_dict[worker]['val'][1][end_date_train: end_date])
 
         # delete old global forest
-        del self.active_models[self.global_forest]
+        del self.active_models_repo[self.global_forest]
         self.maintenance_log[self.predicted_day] = self.worker_repo
 
         self.training()
@@ -670,7 +670,7 @@ class FedRepo:
 
         self.global_forest = forest_from_tree_list(selected_trees)
         self.global_forest.support = 0
-        self.active_models[self.global_forest] = []
+        self.active_models_repo[self.global_forest] = []
 
     def create_cluster_models(self):
         """ Create federated model for each cluster. """
@@ -682,19 +682,19 @@ class FedRepo:
             selected_trees = random.sample(population=list(tree_pool), k=self.num_trees)
             cluster_forest = forest_from_tree_list(selected_trees)
 
-            self.active_models[cluster_forest] = cluster.copy()
+            self.active_models_repo[cluster_forest] = cluster.copy()
 
-        self.active_models[self.global_forest] = []
+        self.active_models_repo[self.global_forest] = []
         self.set_model_support()
 
     def get_model(self, worker):
         """ Return key (model) of worker (in worker list). """
-        return [key for key, worker_list in self.active_models.items() if worker in worker_list][0]
+        return [key for key, worker_list in self.active_models_repo.items() if worker in worker_list][0]
 
     def clean_models(self):
         """ Clean up any cluster model that has been deactivated. """
-        self.active_models = {model: self.active_models[model] for model in self.active_models
-                              if len(self.active_models[model]) != 0 or model == self.global_forest}
+        self.active_models_repo = {model: self.active_models_repo[model] for model in self.active_models_repo
+                              if len(self.active_models_repo[model]) != 0 or model == self.global_forest}
 
     def predict_test_set(self):
         """ Generate predictions using cluster model on test set. """
@@ -753,23 +753,23 @@ class FedRepo:
         self.worker_repo.append(worker)
 
         cluster_forest = self.get_model(worker)
-        self.active_models[cluster_forest].remove(worker)
-        self.active_models[self.global_forest].append(worker)
+        self.active_models_repo[cluster_forest].remove(worker)
+        self.active_models_repo[self.global_forest].append(worker)
 
     def set_model_support(self):
         """ Divide amount of workers predicted by active forest by total amount to get model support. """
-        for (active_model, workers) in self.active_models.items():
+        for (active_model, workers) in self.active_models_repo.items():
             active_model.support = len(workers) / len(self.client_ids)
 
     def check_support(self):
         """ Check support of federated models. If below threshold, deactivate model and replace by global forest. """
-        for active_model in self.active_models.keys():
+        for active_model in self.active_models_repo.keys():
             if (active_model.support <= self.forest_support_threshold) & (active_model != self.global_forest):
                 print(f'{self.predicted_day.date()}: Model support too low. Global model activated '
-                      f'for workers {self.active_models[active_model]}.')
-                self.worker_repo.extend(self.active_models[active_model])
-                self.active_models[self.global_forest].extend(self.active_models[active_model])
-                self.active_models[active_model] = []
+                      f'for workers {self.active_models_repo[active_model]}.')
+                self.worker_repo.extend(self.active_models_repo[active_model])
+                self.active_models_repo[self.global_forest].extend(self.active_models_repo[active_model])
+                self.active_models_repo[active_model] = []
 
     def check_worker_repo(self):
         """ Check if maintenance repo exceeds limit. If so, retrain is needed."""
@@ -778,7 +778,7 @@ class FedRepo:
 
     def generate_cluster_predictions(self, day):
         """ Generate predictions for each worker using their active model. """
-        for cluster_forest, cluster in self.active_models.items():
+        for cluster_forest, cluster in self.active_models_repo.items():
             for worker in cluster:
                 features_day = self.worker_data.features_dict[worker]['val'][0].loc[day.strftime('%Y-%m-%d')]
                 target = self.worker_data.features_dict[worker]['val'][1].loc[day.strftime('%Y-%m-%d')]
@@ -797,7 +797,7 @@ class FedRepo:
 
     def check_worker_allocation(self):
         """ Ensure all workers are accounted for in the active models. """
-        workers_with_models = sum(len(cluster) for cluster in self.active_models.values())
+        workers_with_models = sum(len(cluster) for cluster in self.active_models_repo.values())
         assert workers_with_models == len(self.client_ids)
 
     def generate_without_maintenance(self):
