@@ -37,6 +37,11 @@ def show_static_performance(fedrepo):
     df = df.drop('MAC004863')
     df = df.melt(id_vars='label', ignore_index=False).sort_values(['label', 'variable'])
 
+    # Calculate the number of unique clusters to determine the height
+    num_clusters = len(df['label'].unique())
+    rows_needed = (num_clusters + 2) // 3  
+    height = 300 * rows_needed 
+
     fig = px.line(df,
                   y='value',
                   color='label',
@@ -46,7 +51,7 @@ def show_static_performance(fedrepo):
                   line_dash='variable',
                   line_dash_sequence=['dot', 'solid', 'dash'],
                   labels={'variable': 'Model', 'value': 'RMSE', 'index': 'Workers'},
-                  height=300,
+                  height=height,
                   )
     fig.update_xaxes(matches=None, tickangle=45, showticklabels=False)
     fig.update_yaxes(matches=None)

@@ -3,7 +3,6 @@ import zipfile
 import os
 import pandas as pd
 import numpy as np
-import plotly.express as px
 import matplotlib.pyplot as plt
 import pyswarms.backend as ps
 from pyswarms.backend.topology import Star
@@ -578,7 +577,7 @@ class FedRepo:
 
     def training(self):
         """ Training stage. """
-        fed_forest = FederatedForest(client_ids=self.worker_repo)
+        fed_forest = FederatedForest(client_ids=self.worker_repo, num_trees_per_client=self.num_trees)
         fed_forest.assign_client_data(self.worker_data.x_train, self.worker_data.y_train,
                                       self.worker_data.x_test, self.worker_data.y_test)
 
@@ -675,10 +674,9 @@ class FedRepo:
     def create_cluster_models(self):
         """ Create federated model for each cluster. """
         for cluster in self.clusters[-1]:
-            trees_per_worker = min(1 + (self.num_trees // len(cluster)), 100)
+            trees_per_worker = min(1 + (self.num_trees // len(cluster)), self.num_trees)
             tree_pool = np.array([random.sample(self.local_forests[worker].estimators_, trees_per_worker)
                                   for worker in cluster]).flatten()
-            # tree_pool = np.array([self.local_forests[worker].estimators_ for worker in cluster]).flatten()
             selected_trees = random.sample(population=list(tree_pool), k=self.num_trees)
             cluster_forest = forest_from_tree_list(selected_trees)
 
@@ -694,7 +692,7 @@ class FedRepo:
     def clean_models(self):
         """ Clean up any cluster model that has been deactivated. """
         self.active_models_repo = {model: self.active_models_repo[model] for model in self.active_models_repo
-                              if len(self.active_models_repo[model]) != 0 or model == self.global_forest}
+                                   if len(self.active_models_repo[model]) != 0 or model == self.global_forest}
 
     def predict_test_set(self):
         """ Generate predictions using cluster model on test set. """
@@ -817,3 +815,37 @@ class FedRepo:
             self.without_maintenance_dict[worker]['pred_local'] = preds_local
             self.without_maintenance_dict[worker]['pred_global'] = preds_global
             self.without_maintenance_dict[worker]['true'] = target
+
+    def set_parameters(self, custom_params):
+        """ Set custom parameter values. """
+        if 'z' in custom_params:
+            if 0 < custom_params['z'] <= 100:
+                self.forest_support_threshold = custom_params['z'] / len(self.client_ids)
+            else:
+                raise ValueError("z must be between 0 and 100.")
+        
+        if 'delta' in custom_params:
+            if 0 < custom_params['delta'] <= 100:
+                self.worker_repo_threshold = int(custom_params['delta'])
+            else:
+                raise ValueError("delta must be between 0 and 100.")
+        
+        if 'n_trees' in custom_params:
+            if 30 <= custom_params['n_trees'] <= 300:
+                self.num_trees = custom_params['n_trees']
+            else:
+                raise ValueError("n_trees must be between 30 and 300.")
+
+    def execute(self):
+        print('Initializing and local model training ...')
+        self.initialize()
+        self.training()
+
+        print('Clustering ...')
+        self.clustering()
+
+        print('Evaluating static performance ...')
+        self.generate_without_maintenance()
+
+        print('Concept drift mitigation ...')
+        self.concept_drift_mitigation()
