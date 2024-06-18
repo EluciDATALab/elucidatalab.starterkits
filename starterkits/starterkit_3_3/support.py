@@ -80,7 +80,7 @@ def load_train_view_data(force=False, DATA_PATH='../../data'):
               .make(force=force))
 
     df_train_view = pd.read_csv(f_name)
-    df_train_view['date'] = df_train_view.date.apply(lambda x: pd.datetime.strptime(x, '%Y-%m-%d'))
+    df_train_view['date'] = df_train_view.date.apply(lambda x: pd.to_datetime(x, format='%Y-%m-%d'))
 
     return df_train_view
 
