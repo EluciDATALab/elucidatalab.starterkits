@@ -1,7 +1,8 @@
-folium==0.15.1
-matplotlib==3.8.2
-numpy==1.26.3
-pandas==1.5.3
-seaborn==0.13.1
-tqdm==4.66.1
+folium==0.17.0
+matplotlib==3.7.1
+nbformat==5.8.0
+numpy==1.24.3
+pandas==2.2.2
+seaborn==0.13.2
 starterkits @ git+https://github.com/EluciDATALab/elucidatalab.starterkits.git
+tqdm==4.66.4

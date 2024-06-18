@@ -405,8 +405,10 @@ def plot_trip_duration_difference_between_stations(df):
     tri_lower = np.tril(trip_duration, k=-1).reshape(nof_dest, nof_dest)
 
     distance_difference_from_to = pd.DataFrame(tri_lower - tri_upper.T)
-    distance_difference_from_to.set_axis(trip_duration.columns.values, axis=1, inplace=True)
-    distance_difference_from_to.set_axis(trip_duration.columns.values, axis=0, inplace=True)
+    distance_difference_from_to = distance_difference_from_to.set_axis(
+        trip_duration.columns.values, axis=1)
+    distance_difference_from_to = distance_difference_from_to.set_axis(
+        trip_duration.columns.values, axis=0)
 
     # colored-Matrix
     mask = np.zeros_like(distance_difference_from_to, dtype=bool)
