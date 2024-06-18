@@ -314,7 +314,12 @@ def plot_heatmap_outliers(data, node='Fremont_Bridge'):
     gmm.fit(pca_df)
     pca_df['label'] = gmm.predict(pca_df)
     pivoted_for_pca['cluster'] = pca_df['label'].values
-    tmp = node_data.groupby(['Date', 'DayOfWeek']).sum().reset_index().join(pivoted_for_pca['cluster'], on='Date')
+    tmp = (node_data
+           .drop(columns=['Timestamp', 'Time', 'Node'])
+           .groupby(['Date', 'DayOfWeek'])
+           .sum()
+           .reset_index()
+           .join(pivoted_for_pca['cluster'], on='Date'))
     weekdays_as_weekends = tmp[(tmp['cluster'] == 1) & (tmp['DayOfWeek'] < 6)]
 
     cal = USFederalHolidayCalendar()
