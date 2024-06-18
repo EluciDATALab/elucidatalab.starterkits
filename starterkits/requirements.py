@@ -24,13 +24,14 @@ def merge_requirements(temp_files, output_file):
         print("nbformat is not installed.")
     
     # Check for starterkits package
-    replacers = {'starterkits': "starterkits @ git+https://github.com/EluciDATALab/elucidatalab.starterkits.git\n",
-                 'tqdm': "tqdm==4.66.4"}
+    replacers = {'starterkits': "starterkits @ git+https://github.com/EluciDATALab/elucidatalab.starterkits.git",
+                 'tqdm': "tqdm==4.66.4",
+                 'ipypb': "ipypb==0.5.2"}
     for k, v in replacers.items():
         try:
             pkg_resources.get_distribution(k)
             requirements_set = {req for req in requirements_set if not req.startswith(k)}
-            requirements_set.add(v)
+            requirements_set.add(v + "\n")
         except pkg_resources.DistributionNotFound:
             print(f"{k} is not installed.")
 

@@ -1,5 +1,6 @@
 geopy==2.4.1
-ipypb==0.5.2matplotlib==3.7.1
+ipypb==0.5.2
+matplotlib==3.7.1
 nbformat==5.8.0
 numpy==1.24.3
 pandas==2.2.2
