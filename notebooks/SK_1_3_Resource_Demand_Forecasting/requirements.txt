@@ -4,7 +4,7 @@ dash_core_components==2.0.0
 dash_html_components==2.0.0
 holidays==0.51
 ipython==8.12.3
-ipywidgets==8.0.6
+ipywidgets==8.1.3
 joblib==1.2.0
 jupyter_dash==0.4.2
 matplotlib==3.7.1
