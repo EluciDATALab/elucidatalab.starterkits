@@ -38,7 +38,7 @@ In addition, Starter Kit uses code from the starterkits package, which should be
 pip install -e .
 ```
 
-The notebooks have been developed in python 3.7. The required packages with specific versions are listed in requirements.txt.
+The notebooks have been developed in python 3.10. The required packages with specific versions are listed in requirements.txt.
 
 ## The data
 The data used in each notebook come from public sources and cover a variety of domains. It is hosted on a different repository (https://github.com/EluciDATALab/elucidatalab.datasets). When you run a notebook for the first time, the raw data will be downloaded from this repo and processed to the format the notebook reads it in. This processed dataset will be saved locally in the data/ folder.
