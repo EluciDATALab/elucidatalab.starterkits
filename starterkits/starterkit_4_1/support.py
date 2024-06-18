@@ -296,7 +296,7 @@ def compress_df_SSDT_multi(df, signals, group, mode='ZMEAN'):
     for name, df_sub in tqdm(df.groupby(group), total=df.drive.nunique()):
         data = df_sub[['time'] + signals].values
         compress_data = SSDT_multi(data, mode)
-        df_temp = pd.DataFrame(compress_data, columns=['time'] + signals).dropna()
+        df_temp = pd.DataFrame(compress_data, columns=['time'] + signals).dropna().copy()
         df_temp[group] = name
         df_return.append(df_temp)
     df_return = pd.concat(df_return)
