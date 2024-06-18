@@ -163,8 +163,8 @@ def summarize_outliers(df, n_iqr, int_minutes):
         # summarize outlier events
         outlier_events = (df[df.label_outlier > 0]
                           .groupby('label_outlier')
-                          .agg({'datetime': [min,
-                                             max,
+                          .agg({'datetime': ['min',
+                                             'max',
                                              lambda x: (x.max() - x.min()) / np.timedelta64(1, 'm')],
                                 'temperature': [min, max, np.median],
                                 'residual': [min, max, np.median]}))
