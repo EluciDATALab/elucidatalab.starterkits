@@ -1,0 +1,4 @@
+Good resource planning is half the battle, as it allows one to plan ahead and guarantee that sufficient resources are available when needed. As this holds for most industrial processes, companies tend to maximize their efforts to optimize resources. Resource planning can be influenced by many different factors, which makes it challenging to arrive at accurate forecasts.
+As an increasing amount of data is gathered on how resources were used in the past, this knowledge can be used and exploited by machine learning algorithms to make predictions about the future.
+An integrated view on your historical data complemented with data on external factors influencing the demand can support you in building such a data-driven demand forecasting model.
+Do you want to learn more about how to realise this for your own problem setting?
