@@ -1,7 +1,7 @@
 # ©, 2022, Sirris
 # owner: HCAB
 
-from jupyter_dash import JupyterDash
+import dash
 from dash.dependencies import Input, Output, State
 from dash import callback_context
 import dash_bootstrap_components as dbc
@@ -368,8 +368,10 @@ class LstmApp():
 
     def get_app(self):
 
-        ts_app = JupyterDash(external_stylesheets=[dbc.themes.BOOTSTRAP],
-                             suppress_callback_exceptions=True)
+        # ts_app = JupyterDash(external_stylesheets=[dbc.themes.BOOTSTRAP],
+        #                      suppress_callback_exceptions=True)
+        ts_app = dash.Dash(external_stylesheets=[dbc.themes.BOOTSTRAP], 
+                           suppress_callback_exceptions=True)
         ts_app.layout = dbc.Container([
             dbc.Tabs([
                 dbc.Tab(get_tab1_content(), label='Training'),
