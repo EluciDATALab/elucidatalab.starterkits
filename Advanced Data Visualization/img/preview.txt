@@ -1,4 +1,0 @@
-Data visualisation is an important activity in several phases of a data science project. It allows you to understand several characteristics of a dataset, to discover interesting insights, to validate analysis results, to communicate these results to non-experts via intuitive dashboards, and so on.
-Advanced visualisations exploit the human eye's extraordinary visual pattern recognition abilities. A clever visualisation of data can already reveal interesting patterns and insights, even before any complex algorithm is applied. On top of that, they can help in formulating hypotheses to be validated further in the data analytics process or to identify features that can be useful for data-driven modelling.
-In this Starter Kit, we will use advanced visualisations to explore a dataset and gradually build up more knowledge about it. 
-

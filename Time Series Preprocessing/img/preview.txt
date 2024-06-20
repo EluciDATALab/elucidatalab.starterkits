@@ -1,4 +1,0 @@
-With the increasing amount of machines and products that are equipped with sensors, many companies collect an enormous amount of time-series data every day. While this data can yield interesting insights for different types of problems settings, dealing with this data is not easy, as it typically cannot be used as-is by algorithms. This results from the fact that this data is often noisy or contains missing data due to sensor misreadings and is often gathered at very high frequency.
-Therefore, in most cases it is required to carefully preprocess the data first, in order to improve its quality. This is a stepwise process, in which different quality aspects need to be assessed and – if necessary – rectified.
-Several easy-to-implement techniques can help you to get the most out of your time-series data by improving its completeness, reliability and accuracy.
-Do you want to learn more about how to deal with such challenging sensor data streams in an industrial context?

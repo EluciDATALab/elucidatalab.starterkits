@@ -1,5 +1,0 @@
-More and more assets are instrumented and connected, in order to collect usage and performance data such that
-they can be monitored (semi-)continuously. A large number of sensors can be installed which log data in high frequency, resulting in a large amount of data being collected.
-
-Data compression can help alleviate the burden of having to transmit such large amounts of data to an upstream server by reducing the size of the data that needs to be stored or transferred.
-In this Starter Kit we present intelligent data retention methods able to distinguish between high and low informative data, i.e. abnormal and normal usage data, and which can compress the data with low informativeness to a higher degree than the data with high informativeness.
