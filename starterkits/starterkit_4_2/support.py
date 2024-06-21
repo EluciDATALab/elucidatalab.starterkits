@@ -570,8 +570,8 @@ class FedRepo:
                                                'pred_index': [], 'active_model': []} for worker in self.client_ids}
         random.seed(1)
 
-    def initialize(self):
-        """ Initialization stage. """
+    def initialise(self):
+        """ Initialisation stage. """
         self.worker_repo = self.client_ids
         self.active_models_repo = {}
 
@@ -837,8 +837,8 @@ class FedRepo:
                 raise ValueError("n_trees must be between 30 and 300.")
 
     def execute(self):
-        print('Initializing and local model training ...')
-        self.initialize()
+        print('Initialising and local model training ...')
+        self.initialise()
         self.training()
 
         print('Clustering ...')
