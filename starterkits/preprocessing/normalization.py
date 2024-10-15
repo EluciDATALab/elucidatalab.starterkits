@@ -129,3 +129,21 @@ def replace_nans(x, aggfun=np.nanmean, min_nonnan=None):
         x.set_index(x_idx, inplace=True)
 
     return x
+
+
+def normalize_along_rows(df, band_cols):
+    """
+    Normalize the given matrix df with row a_i is along the given frequency bands:
+    a_ij' = a_ij / sum(a_i).
+
+    :param df: the Pandas DataFrame containing the dataset to normalize
+    :param band_cols: a list referencing the columns of the DataFrame to
+    normalize
+
+    :returns: the normalized DataFrame
+    """
+    df_normalized = df[band_cols]
+    sum_ = df_normalized.sum(axis=1)
+    df_normalized = pd.DataFrame([df_normalized[col].div(sum_) for col in df_normalized.columns]).T.dropna()
+    df_normalized.columns = band_cols
+    return df_normalized
