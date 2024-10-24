@@ -312,7 +312,7 @@ def plot_example_interactive():
             ax.plot(df_example[var], label=var)
             ax.set_title(var)
             ax.legend()
-        fig.show()
+        # fig.show()
 
     file_names_healthy = glob.glob(os.path.join(BASE_PATH_HEALTHY, '*.txt'))
     rpms = [int(_f.split('/')[-1].split('_')[0].strip('V')) for _f in file_names_healthy]
