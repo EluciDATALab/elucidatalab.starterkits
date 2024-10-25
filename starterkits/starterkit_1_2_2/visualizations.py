@@ -173,7 +173,7 @@ def illustrate_nmf_components_interactive(df_V_train, df_nmf_models):
             if i_row == (n_rows - 1):
                 _ax.set_xlabel('Frequency [orders]')
 
-        fig.show()
+        plt.show()
 
     def get_additional_options(criterium, n_components_range):
         global previous_value_threshold
@@ -260,7 +260,7 @@ def show_fingerprints(model, df_V_train, meta_data_train, df_operating_modes):
         ax.xaxis.label.set_fontsize(fontsize)
         ax.yaxis.label.set_fontsize(fontsize)
 
-        fig.show()
+        plt.show()
 
     n_components = model.W.shape[1]
     W_train = model.W.reshape(-1, n_components)
@@ -312,7 +312,8 @@ def plot_example_interactive():
             ax.plot(df_example[var], label=var)
             ax.set_title(var)
             ax.legend()
-        fig.show()
+
+        plt.show()
 
     file_names_healthy = glob.glob(os.path.join(BASE_PATH_HEALTHY, '*.txt'))
     rpms = [int(_f.split('/')[-1].split('_')[0].strip('V')) for _f in file_names_healthy]
@@ -415,7 +416,7 @@ def plot_weights_interactive(df_W_online, meta_data_test, df_operating_modes, n_
         ax.xaxis.label.set_fontsize(fontsize)
         ax.yaxis.label.set_fontsize(fontsize)
 
-        fig.show()
+        plt.show()
 
     possible_periods = sorted(list(df_W_online['unique_sample_id'].index))
     controller_period = get_controller({'widget': 'Dropdown',

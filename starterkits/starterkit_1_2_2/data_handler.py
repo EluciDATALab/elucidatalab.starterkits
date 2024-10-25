@@ -17,11 +17,11 @@ def fetch_and_unzip_data(force=False):
     url = 'https://phm-datasets.s3.amazonaws.com/Data_Challenge_PHM2023_training_data.zip'
 
     fname_zip = f'{FNAME}.zip'
-    fname = os.path.join(DATA_PATH, fname_zip)
-    download_from_url(url, fname, force=force)
 
     local_path_zipped = os.path.join(DATA_PATH, fname_zip)
-    local_path_unzipped = os.path.join(DATA_PATH, fname)
+    local_path_unzipped = os.path.join(DATA_PATH, FNAME)
+
+    download_from_url(url, local_path_zipped, force=force)
 
     if not os.path.exists(local_path_unzipped) or force:
         assert os.path.exists(local_path_zipped), f'Could not find {local_path_zipped}'
