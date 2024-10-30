@@ -17,6 +17,7 @@ def fetch_and_unzip_data(force=False):
     url = 'https://phm-datasets.s3.amazonaws.com/Data_Challenge_PHM2023_training_data.zip'
 
     fname_zip = f'{FNAME}.zip'
+
     local_path_zipped = os.path.join(DATA_PATH, fname_zip)
     local_path_unzipped = os.path.join(DATA_PATH, FNAME)
 

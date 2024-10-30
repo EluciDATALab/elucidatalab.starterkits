@@ -312,6 +312,7 @@ def plot_example_interactive():
             ax.plot(df_example[var], label=var)
             ax.set_title(var)
             ax.legend()
+
         plt.show()
 
     file_names_healthy = glob.glob(os.path.join(BASE_PATH_HEALTHY, '*.txt'))
