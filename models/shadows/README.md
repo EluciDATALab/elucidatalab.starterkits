@@ -3,10 +3,10 @@ This repository contains the code to perform shadow correction of aerial images 
 1. **ShadowScout**: shadow detection in RGB or RGB+NIR images
 2. **ShadowCorrect**: correct shadows in RGB images based on their shadow masks
 
-![Example image](https://gitlab.com/hcab_share/bilight_share/-/raw/main/media/example.png)
+![Example image](https://raw.githubusercontent.com/EluciDATALab/elucidatalab.starterkits/main/models/shadows/media/example.png)
 
 ## Package installation
-Install the *shadows* code package with 
+Install the *shadows* code package and its dependencies with 
 
 ```bash
 pip install -e .
