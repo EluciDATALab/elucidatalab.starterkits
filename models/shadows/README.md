@@ -19,7 +19,7 @@ pip install -e .
 A pretrained model is stored in the output_AISD directory. To access the full AISD dataset visit:
 https://github.com/RSrscoder/AISD
 
-```python
+```bash
 python src/shadows/shadowscout/model/run_model.py infer --test_dir data/AISD/test/shadow/ --save_dir output_AISD/shadow_masks --config_path output_AISD/shadow_masks/config.json --model_path output_AISD/best_epoch_checkpoint.pt
 ```
 Predicted shadow masks will be saved to output_AISD/predicted_masks/
@@ -28,7 +28,7 @@ evaluated with the functions in shadows.shadowscout.image_manipulation.compute_m
 
 
 ### Test a pretrained model on plain 4-band images (RGB + NIR)
-```python
+```bash
 python src/shadows/shadowscout/model/run_model.py infer --test_dir data/4bands/test/ --save_dir output_4bands/shadow_masks --model_path output_4bands/shadow_masks/best_epoch_checkpoint.pt  --config_path output_4band/shadow_masks/config_4band.json
 ```
 
@@ -39,14 +39,14 @@ edit concern the number of channels (and the initial channel_weights for each ch
 file will be copied to the output directory
 
 **Model training**:
-```python
+```bash
 python src/shadows/shadowscout/model/run_model.py train --train_dir PATH_TO_TRAIN_IMAGES_FOLDER --validate_dir PATH_TO_VALIDATE_IMAGES_FOLDER --save_dir PATH_TO_OUTPUT_DIRECTORY --config_path PATH_TO_CONFIG_FILE
 ```
 
 For convenience, two config files are provided: one for regular 3-channel inputs (src/shadows/shadowcast/config.json) and one for 4-channel inputs (src/shadows/shadowcast/config_4band.json).
 
 Subsequently, **inference** can be made on a sample of images:
-```python
+```bash
 python src/shadowscout/model/run_model.py infer --test_dir PATH_TO_TEST_IMAGES_FOLDER --save_dir PATH_TO_OUTPUT_DIRECTORY --model_path PATH_TO_MODEL --config_path PATH_TO_CONFIG_FILE
 ```
 
@@ -65,8 +65,8 @@ Although the method requires several parameters for optimal results, we have enh
 ### Defining parameter configurations for image clusters
 In order to (re-)run the  optimization of shadow correction parameters for groups of similar images, run the following code:
 
-```python
-python src/shadows/shadowcorrect/cluster_images.py --image_dir PATH_TO_TEST_IMAGES_FOLDER --shadow_mask_dir PATH_TO_COMPUTED_SHADOW_MASKS --output_dir PATH_TO_OUTPUT_FOLDER
+```bash
+python src/shadows/shadowcorrect/cluster_images.py --image_dir PATH_TO_TRAIN_IMAGES --shadow_mask_dir PATH_TO_COMPUTED_SHADOW_MASKS --output_dir output_4bands/shadow_corrected/
 ```
 
 This will use the default shadow correction configuration to initiate the process. Optionally, you can also pass a custom configuration json via the *--config_path* parameter. 
@@ -75,6 +75,6 @@ The process will output a json file, stored in the location indicated by the *--
 ### Shadow correction
 Finally, shadows can be corrected with the following command. Note that the method requires the shadow mask to have been already computed
 
-```python
-python src/shadows/shadowcorrect/run_model.py --image_dir PATH_TO_IMAGES_FOLDER --shadow_mask_dir PATH_TO_COMPUTED_SHADOW_MASKS --output_dir PATH_TO_OUTPUT_FOLDER --clustering_parameter_optimization_fpath PATH_TO_CLUSTERING_PARAMETER_OPTIMIZATION_FILE
+```bash
+python src/shadows/shadowcorrect/run_model.py --image_dir data/4bands/test/ --shadow_mask_dir output_4bands/shadow_masks/predicted_masks/ --output_dir output_4bands/shadow_corrected/ --clustering_parameter_optimization_fpath output_4bands/shadow_corrected/region_group_matching_config.json
 ```
