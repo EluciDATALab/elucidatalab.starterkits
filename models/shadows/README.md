@@ -3,7 +3,7 @@ This repository contains the code to perform shadow correction of aerial images 
 1. **ShadowScout**: shadow detection in RGB or RGB+NIR images
 2. **ShadowCorrect**: correct shadows in RGB images based on their shadow masks
 
-![Example image](https://raw.githubusercontent.com/EluciDATALab/elucidatalab.starterkits/main/models/shadows/media/example.png)
+![Example image](https://gitlab.com/hcab_share/bilight_share/-/raw/main/media/example.png)
 
 ## Package installation
 Install the *shadows* code package with 
@@ -66,7 +66,7 @@ Although the method requires several parameters for optimal results, we have enh
 In order to (re-)run the  optimization of shadow correction parameters for groups of similar images, run the following code:
 
 ```python
-python src/shadows/shadowcorrect/cluster_images.py --image_dir PATH_TO_TEST_IMAGES_FOLDER --shadow_mask_dir output_4bands/shadow_masks/predicted_masks/ --output_dir src/shadows/shadowcorrect/
+python src/shadows/shadowcorrect/cluster_images.py --image_dir PATH_TO_TEST_IMAGES_FOLDER --shadow_mask_dir PATH_TO_COMPUTED_SHADOW_MASKS --output_dir PATH_TO_OUTPUT_FOLDER
 ```
 
 This will use the default shadow correction configuration to initiate the process. Optionally, you can also pass a custom configuration json via the *--config_path* parameter. 
@@ -76,5 +76,5 @@ The process will output a json file, stored in the location indicated by the *--
 Finally, shadows can be corrected with the following command. Note that the method requires the shadow mask to have been already computed
 
 ```python
-python src/shadows/shadowcorrect/cluster_images.py --image_dir PATH_TO_IMAGES_FOLDER --shadow_mask_dir output_4bands/shadow_masks/predicted_masks/ --output_dir src/shadows/shadowcorrect/
+python src/shadows/shadowcorrect/run_model.py --image_dir PATH_TO_IMAGES_FOLDER --shadow_mask_dir PATH_TO_COMPUTED_SHADOW_MASKS --output_dir PATH_TO_OUTPUT_FOLDER --clustering_parameter_optimization_fpath PATH_TO_CLUSTERING_PARAMETER_OPTIMIZATION_FILE
 ```

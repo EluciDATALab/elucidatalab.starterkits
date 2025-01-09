@@ -1,0 +1,3 @@
+Epoch,Loss_Train,Loss_Validation,Interclass_variance_Train,Interclass_variance_Validation,Calinsky-Harabasz_Train,Calinsky-Harabasz_Validate,HI_weight,I_weight,S_weight
+0,-6.1638722,-6.815424,6.412118882406503,1.1800828650593758,262090.3,469862.16,0.5,0.5,0.5
+1,-6.4043956,-6.9711165,5.532741473331043,1.1602011937648058,221856.81,460423.12,0.5,0.5,0.5

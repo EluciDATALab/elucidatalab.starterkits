@@ -156,7 +156,7 @@ def get_rgm_parameters(config_mode, config_file=None, image=None):
     :return light_finetuning: dictionary with optimized parameters for light finetuning
     :return shadow_finetuning: dictionary with optimized parameters for shadow finetuning
     """
-    from BI_Light.ShadowCorrection.RegionGroupMatching.cluster_images import get_clustering_features_from_image
+    from shadows.shadowcorrect.cluster_images import get_clustering_features_from_image
     if config_mode in ['default', 'manual']:
         if config_file is None:
             raise ValueError("if config_mode is 'manual', config_file cannot be None")
