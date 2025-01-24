@@ -5,7 +5,7 @@ This repository contains the code to perform shadow correction of aerial images 
 
 The code has been tested on python3.8.
 
-![Example image](https://raw.githubusercontent.com/EluciDATALab/elucidatalab.starterkits/main/models/shadows/media/example.png)
+![Example image](https://gitlab.com/hcab_share/bilight_share/-/raw/main/media/example.png)
 
 ## Package installation
 Install the *shadows* code package and its dependencies with 
@@ -78,5 +78,5 @@ The process will output a json file, stored in the location indicated by the *--
 Finally, shadows can be corrected with the following command. Note that the method requires the shadow mask to have been already computed
 
 ```bash
-python src/shadows/shadowcorrect/run_model.py --image_dir data/4bands/test/ --shadow_mask_dir output_4bands/shadow_masks/predicted_masks/ --output_dir output_4bands/shadow_corrected/ --clustering_parameter_optimization_fpath output_4bands/shadow_corrected/region_group_matching_config.json
+python src/shadows/shadowcorrect/run_model.py --image_dir data/4bands/test/ --shadow_mask_dir output_4bands/shadow_masks/predicted_masks/ --output_dir output_4bands/shadow_corrected/ --clustering_parameter_optimization_fpath src/shadows/shadowcorrect/optimized_cluster_parameters.json
 ```
