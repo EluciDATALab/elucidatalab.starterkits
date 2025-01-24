@@ -5,7 +5,7 @@ This repository contains the code to perform shadow correction of aerial images 
 
 The code has been tested on python3.8.
 
-![Example image](https://raw.githubusercontent.com/elucidatalab/starterkits/shadows/main/media/example.png)
+<> ![Example image](https://raw.githubusercontent.com/elucidatalab/starterkits/shadows/main/media/example.png)
 
 ## Package installation
 Install the *shadows* code package and its dependencies with 
